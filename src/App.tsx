@@ -14,7 +14,7 @@ export default function App() {
     <div
       className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}
       role="application"
-      aria-label="MemeLab Meme Generator"
+      aria-label="MK ViralCanvas Meme Generator"
     >
       <SettingsPanel />
       <ToastContainer />
@@ -114,7 +114,7 @@ export default function App() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2 text-text-muted">
               <Smile size={18} />
-              <span className="font-display font-bold text-sm">MemeLab v2.0</span>
+              <span className="font-display font-bold text-sm">MK ViralCanvas v2.0</span>
             </div>
             <div className="flex items-center gap-4 text-xs text-text-muted">
               <a href="https://github.com/mk-knight23/19-web-viral-creator" target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary transition-colors">GitHub</a>
@@ -123,7 +123,7 @@ export default function App() {
               <span>·</span>
               <span>Free & open-source</span>
             </div>
-            <p className="text-text-muted text-xs">© 2026 MemeLab by Musharraf Kazi</p>
+            <p className="text-text-muted text-xs">© 2026 MK ViralCanvas by Qazi Musharof</p>
           </div>
         </footer>
       </div>

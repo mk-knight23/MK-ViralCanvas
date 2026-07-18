@@ -394,7 +394,7 @@ export function MemeGenerator() {
   };
 
   const shareUrl = encodeURIComponent(window.location.href);
-  const shareText = encodeURIComponent('Check out this meme I made on MemeLab!');
+  const shareText = encodeURIComponent('Check out this meme I made on MK ViralCanvas!');
 
   const quickColors = [
     '#ffffff',

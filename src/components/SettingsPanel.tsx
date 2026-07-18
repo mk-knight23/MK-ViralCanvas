@@ -218,7 +218,7 @@ export function SettingsPanel() {
             </div>
 
             <footer className="p-5 border-t border-border text-center">
-              <p className="text-xs text-text-muted">MemeLab v2.0 — Built with React + Vite</p>
+              <p className="text-xs text-text-muted">MK ViralCanvas v2.0 — Built with React + Vite</p>
             </footer>
           </motion.div>
         </motion.div>
