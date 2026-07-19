@@ -25,8 +25,8 @@ export default function App() {
             <div className="bg-brand-primary p-2 rounded-xl shadow-lg shadow-brand-primary/20">
               <Smile className="text-white w-5 h-5" />
             </div>
-            <h1 className="text-xl font-display font-bold tracking-tight">
-              Meme<span className="text-brand-primary">Lab</span>
+            <h1 className="text-xl font-display font-black tracking-tight uppercase leading-none">
+              MK_<span className="text-brand-primary">ViralCanvas</span>
             </h1>
           </div>
 
@@ -123,7 +123,9 @@ export default function App() {
               <span>·</span>
               <span>Free & open-source</span>
             </div>
-            <p className="text-text-muted text-xs">© 2026 MK ViralCanvas by Qazi Musharof</p>
+            <p className="text-text-muted text-xs">
+              © 2026 <a href="https://www.mkazi.live" target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary transition-colors">Qazi Musharof — Kazi Developer</a>. All rights reserved.
+            </p>
           </div>
         </footer>
       </div>
