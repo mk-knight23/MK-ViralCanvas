@@ -1,0 +1,21 @@
+{
+  "name": "MK ViralCanvas — Meme & Social Graphic Studio",
+  "short_name": "ViralCanvas",
+  "description": "Free privacy-conscious browser studio for memes, social graphics, and quote cards. No signup required.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0f14",
+  "theme_color": "#7c3aed",
+  "orientation": "any",
+  "categories": ["design", "productivity", "utilities"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

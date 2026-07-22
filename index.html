@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MK ViralCanvas — Social Image, Meme &amp; Content Creator</title>
     <meta name="description" content="Create memes, social media graphics, and shareable visual content. Free browser-based image editor with templates and export." />
     <meta name="keywords" content="meme creator, meme generator, social media graphics, image editor, viral content, MK ViralCanvas" />
-    <meta name="author" content="Qazi Musharof" />
+    <meta name="author" content="Kazi Musharraf" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://19-web-viral-creator.vercel.app/" />
 
@@ -42,9 +43,48 @@
       },
       "author": {
         "@type": "Person",
-        "name": "Qazi Musharof"
-      }
+        "name": "Kazi Musharraf",
+        "url": "https://www.mkazi.live",
+        "sameAs": ["https://github.com/mk-knight23"]
+      },
+      "creator": {
+        "@type": "Person",
+        "name": "Kazi Musharraf",
+        "url": "https://www.mkazi.live"
+      },
+      "isAccessibleForFree": true,
+      "browserRequirements": "Requires modern browser with JavaScript enabled"
     }
+    </script>
+
+    <!--
+      Analytics activation: GTM/GA4 load only when VITE_GTM_ID / VITE_GA4_ID
+      are set at build time. Vercel Web Analytics + Speed Insights are enabled
+      from the Vercel dashboard and injected server-side. See docs/ANALYTICS.md.
+    -->
+    <script>
+      (function(){
+        var GTM_ID = "%VITE_GTM_ID%";
+        if (GTM_ID && GTM_ID.charAt(0) !== '%' && /^GTM-[A-Z0-9]+$/.test(GTM_ID)) {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({'gtm.start': Date.now(), event: 'gtm.js'});
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
+          document.head.appendChild(s);
+        }
+        var GA4_ID = "%VITE_GA4_ID%";
+        if (GA4_ID && GA4_ID.charAt(0) !== '%' && /^G-[A-Z0-9]+$/.test(GA4_ID)) {
+          var g = document.createElement('script');
+          g.async = true;
+          g.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA4_ID;
+          document.head.appendChild(g);
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function(){ window.dataLayer.push(arguments); };
+          window.gtag('js', new Date());
+          window.gtag('config', GA4_ID, { anonymize_ip: true });
+        }
+      })();
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

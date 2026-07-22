@@ -124,7 +124,7 @@ export default function App() {
               <span>Free & open-source</span>
             </div>
             <p className="text-text-muted text-xs">
-              © 2026 <a href="https://www.mkazi.live" target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary transition-colors">Qazi Musharof — Kazi Developer</a>. All rights reserved.
+              © 2026 <a href="https://www.mkazi.live" target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary transition-colors">Kazi Musharraf — Kazi Developer</a>. All rights reserved.
             </p>
           </div>
         </footer>
