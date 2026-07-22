@@ -8,7 +8,10 @@ export type LayerDirection = 'up' | 'down';
  * Every function returns a new array and never mutates its input.
  */
 
-export function addLayer(layers: readonly TextLayer[], overrides: Partial<TextLayer> = {}): TextLayer[] {
+export function addLayer(
+  layers: readonly TextLayer[],
+  overrides: Partial<TextLayer> = {}
+): TextLayer[] {
   if (layers.length >= MAX_LAYERS) return [...layers];
   return [...layers, createTextLayer(overrides)];
 }

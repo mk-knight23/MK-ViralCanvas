@@ -140,7 +140,8 @@ export function validateProject(value: unknown): ParseResult {
     return { ok: false, error: 'Project template image is missing or unsafe' };
   }
 
-  const artboard = value.artboard === undefined ? createProject().artboard : sanitizeArtboard(value.artboard);
+  const artboard =
+    value.artboard === undefined ? createProject().artboard : sanitizeArtboard(value.artboard);
   if (artboard === null) {
     return { ok: false, error: 'Project artboard dimensions are invalid' };
   }
@@ -149,7 +150,8 @@ export function validateProject(value: unknown): ParseResult {
   const project: Project = {
     schemaVersion: PROJECT_SCHEMA_VERSION,
     id: typeof value.id === 'string' && value.id.length > 0 ? value.id : generateId('proj'),
-    name: asBoundedString(value.name, 'Imported project', MAX_NAME_LENGTH).trim() || 'Imported project',
+    name:
+      asBoundedString(value.name, 'Imported project', MAX_NAME_LENGTH).trim() || 'Imported project',
     createdAt: typeof value.createdAt === 'string' ? value.createdAt : now,
     updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : now,
     artboard,
@@ -164,7 +166,11 @@ export function validateProject(value: unknown): ParseResult {
 // ---------------------------------------------------------------------------
 
 export function serializeProject(project: Project): string {
-  return JSON.stringify({ kind: EXPORT_FILE_KIND, version: PROJECT_SCHEMA_VERSION, project }, null, 2);
+  return JSON.stringify(
+    { kind: EXPORT_FILE_KIND, version: PROJECT_SCHEMA_VERSION, project },
+    null,
+    2
+  );
 }
 
 /** Parses a JSON string produced by serializeProject (or a bare project object). */

@@ -25,7 +25,13 @@ describe('serialization round-trip', () => {
   it('serializes and parses a project back to an equal object', () => {
     const project = createProject({
       name: 'Round trip',
-      template: { id: 't1', name: 'Drake', url: 'https://i.imgflip.com/30b1gx.jpg', width: 1200, height: 1200 },
+      template: {
+        id: 't1',
+        name: 'Drake',
+        url: 'https://i.imgflip.com/30b1gx.jpg',
+        width: 1200,
+        height: 1200,
+      },
       layers: [
         createTextLayer({ id: 'l1', text: 'TOP', y: 8, rotation: -12, opacity: 0.8 }),
         createTextLayer({ id: 'l2', text: 'BOTTOM', y: 92, locked: true, hidden: true }),
@@ -83,7 +89,9 @@ describe('import validation', () => {
   });
 
   it('rejects invalid artboard dimensions', () => {
-    expect(validateProject({ layers: [], artboard: { width: 'wide', height: 100 } }).ok).toBe(false);
+    expect(validateProject({ layers: [], artboard: { width: 'wide', height: 100 } }).ok).toBe(
+      false
+    );
   });
 
   it('clamps out-of-range layer values instead of failing', () => {
