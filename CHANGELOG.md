@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] - unreleased
+- Multi-layer text system: unlimited positioned text layers (up to 30) with per-layer font, size, weight, color, stroke, shadow, opacity, rotation, hide/show, lock, reorder, duplicate, delete. Classic top/bottom text remains the default two layers.
+- Drag-to-reposition text directly on the canvas (mouse + touch via pointer events), plus X/Y sliders.
+- Artboard presets: Instagram Square/Portrait/Story, YouTube Thumbnail, X Post, LinkedIn Post, Facebook Post, Pinterest Pin, and custom WxH (16-4096px). Preview scales to fit; exports render at true dimensions.
+- Named local projects under `viralcanvas:v1:` localStorage keys: debounced autosave, recent-projects list with open/duplicate/rename/delete, JSON export, and validated JSON import that rejects malformed input gracefully.
+- Export upgrades: PNG + JPEG + WebP via canvas.toBlob, quality slider for lossy formats, 1x/2x resolution multiplier, browser-fallback notice when a format is unsupported.
+- Dashboard strip with real local data: recent projects, total exports counter, storage usage estimate.
+- Test suite expanded from 1 to 41 tests (layer operations, project serialization round-trip, import validation, store history); in-memory Storage polyfill added to test setup.
+
 ## [2.3.0] - 2026-07-22
 - P0 upgrade pass: fixed brand spelling (Qazi → Kazi), removed stale deploy artifacts, replaced legacy Vercel builds config with modern SPA rewrites + security headers.
 - Truthful docs: real README, docs/ARCHITECTURE.md, docs/ANALYTICS.md, docs/PRIVACY.md, updated SECURITY.md.
