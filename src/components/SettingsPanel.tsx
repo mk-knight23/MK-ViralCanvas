@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '@/stores/settings';
 import { useStatsStore } from '@/stores/stats';
@@ -21,6 +21,9 @@ export function SettingsPanel() {
   const stats = useStatsStore();
   const { playClick } = useAudio();
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
   const themeOptions = [
     { value: 'dark' as const, label: 'Dark', icon: Moon },
     { value: 'light' as const, label: 'Light', icon: Sun },
@@ -34,20 +37,58 @@ export function SettingsPanel() {
     return `${minutes}m`;
   };
 
+  // While the dialog is open: lock background scroll, move focus into the
+  // dialog, and restore focus to the trigger element when it closes.
   useEffect(() => {
-    if (settings.showHelp) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (!settings.showHelp) return;
+
+    triggerRef.current = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = 'hidden';
+    const focusTimer = window.setTimeout(() => dialogRef.current?.focus(), 0);
+
     return () => {
+      window.clearTimeout(focusTimer);
       document.body.style.overflow = '';
+      triggerRef.current?.focus?.();
     };
   }, [settings.showHelp]);
 
   const close = () => {
     playClick();
     settings.toggleHelp();
+  };
+
+  // Esc closes the dialog; Tab is trapped inside it while open.
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      close();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+
+    const root = dialogRef.current;
+    if (!root) return;
+    const focusable = Array.from(
+      root.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(el => !el.hasAttribute('disabled'));
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey) {
+      if (active === first || active === root) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (active === last) {
+      e.preventDefault();
+      first.focus();
+    }
   };
 
   return (
@@ -59,16 +100,19 @@ export function SettingsPanel() {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={close}
+          onKeyDown={handleKeyDown}
           role="dialog"
           aria-modal="true"
           aria-labelledby="settings-title"
         >
           <motion.div
+            ref={dialogRef}
+            tabIndex={-1}
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="card-elevated w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar"
+            className="card-elevated w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar outline-none"
             onClick={e => e.stopPropagation()}
           >
             <header className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-surface-elevated z-10 rounded-t-[1.25rem]">

@@ -40,6 +40,7 @@ import {
   searchMemes,
 } from '@/utils/api';
 import { findLayer } from '@/utils/layers';
+import { isEditableTarget } from '@/utils/keyboard';
 import {
   getLastProjectId,
   incrementExportCount,
@@ -177,30 +178,22 @@ export function MemeGenerator() {
   }, [stats]);
 
   const handlersRef = useRef({
-    handleDownload: () => {},
-    handleRandom: () => {},
-    handleFavorite: () => {},
     undo: () => {},
     redo: () => {},
   });
 
+  // Only undo/redo are bound globally. Browser-reserved combos (Ctrl+R
+  // reload, Ctrl+S save, Ctrl+D bookmark) are intentionally left alone, and
+  // shortcuts never fire while the user is typing in an editable control.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (!e.ctrlKey && !e.metaKey) return;
+      if (isEditableTarget(e.target)) return;
       const key = e.key.toLowerCase();
-      if (key === 'd') {
-        e.preventDefault();
-        handlersRef.current.handleDownload();
-      } else if (key === 'r') {
-        e.preventDefault();
-        handlersRef.current.handleRandom();
-      } else if (key === 's') {
-        e.preventDefault();
-        handlersRef.current.handleFavorite();
-      } else if (key === 'z') {
+      if (key === 'z' && !e.shiftKey) {
         e.preventDefault();
         handlersRef.current.undo();
-      } else if (key === 'y') {
+      } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
         e.preventDefault();
         handlersRef.current.redo();
       }
@@ -399,7 +392,7 @@ export function MemeGenerator() {
     addToast('Saved to favorites!', 'success');
   };
 
-  handlersRef.current = { handleDownload, handleRandom, handleFavorite, undo, redo };
+  handlersRef.current = { undo, redo };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -562,7 +555,8 @@ export function MemeGenerator() {
                       value={selectedLayer?.fontFamily ?? FONT_OPTIONS[0].value}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ fontFamily: e.target.value })}
-                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm outline-none cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Font family"
+                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer disabled:cursor-not-allowed"
                     >
                       {FONT_OPTIONS.map(f => (
                         <option key={f.value} value={f.value}>
@@ -577,7 +571,8 @@ export function MemeGenerator() {
                       value={selectedLayer?.fontWeight ?? 900}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ fontWeight: Number(e.target.value) })}
-                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm outline-none cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Font weight"
+                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer disabled:cursor-not-allowed"
                     >
                       {WEIGHT_OPTIONS.map(w => (
                         <option key={w.value} value={w.value}>
@@ -600,6 +595,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.fontSize ?? 80}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ fontSize: parseInt(e.target.value) })}
+                      aria-label="Font size"
                       className="w-full"
                     />
                   </div>
@@ -614,6 +610,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.rotation ?? 0}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ rotation: parseInt(e.target.value) })}
+                      aria-label="Text rotation"
                       className="w-full"
                     />
                   </div>
@@ -675,6 +672,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.strokeWidth ?? 0}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ strokeWidth: parseInt(e.target.value) })}
+                      aria-label="Stroke width"
                       className="w-full mt-2"
                     />
                   </div>
@@ -693,6 +691,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.opacity ?? 1}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ opacity: Number(e.target.value) })}
+                      aria-label="Text opacity"
                       className="w-full"
                     />
                   </div>
@@ -729,6 +728,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.x ?? 50}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ x: parseInt(e.target.value) })}
+                      aria-label="Horizontal position"
                       className="w-full"
                     />
                   </div>
@@ -743,6 +743,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.y ?? 50}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ y: parseInt(e.target.value) })}
+                      aria-label="Vertical position"
                       className="w-full"
                     />
                   </div>
@@ -888,7 +889,7 @@ export function MemeGenerator() {
                       }}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                         activeCategory === cat.id
-                          ? 'bg-brand-primary text-white'
+                          ? 'bg-brand-cta text-white'
                           : 'bg-surface-secondary text-text-muted hover:text-text-secondary hover:bg-border'
                       }`}
                     >
@@ -1015,7 +1016,7 @@ export function MemeGenerator() {
                               </p>
                             </div>
                           )}
-                          <div className="absolute inset-2 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
+                          <div className="absolute inset-2 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
                             <button
                               onClick={() => {
                                 selectMeme({

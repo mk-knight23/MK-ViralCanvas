@@ -4,12 +4,13 @@
   --color-brand-primary: #a855f7;
   --color-brand-accent: #ec4899;
   --color-brand-glow: #c084fc;
+  --color-brand-cta: #7e22ce;
   --color-surface: #f0e6f6;
   --color-surface-secondary: #f5f0fa;
   --color-surface-elevated: rgba(255, 255, 255, 0.5);
   --color-text-primary: #1e1b3a;
   --color-text-secondary: #5b5278;
-  --color-text-muted: #9590ad;
+  --color-text-muted: #6a6386;
   --color-border: rgba(255, 255, 255, 0.35);
   --color-border-hover: rgba(168, 85, 247, 0.3);
   --font-display: 'Outfit', sans-serif;
@@ -20,12 +21,13 @@
   --color-brand-primary: #c084fc;
   --color-brand-accent: #f472b6;
   --color-brand-glow: #a855f7;
+  --color-brand-cta: #9333ea;
   --color-surface: #0f0a1a;
   --color-surface-secondary: #1a1230;
   --color-surface-elevated: rgba(26, 18, 48, 0.7);
   --color-text-primary: #f1f5f9;
   --color-text-secondary: #a5a0bf;
-  --color-text-muted: #6b6587;
+  --color-text-muted: #8f89ab;
   --color-border: rgba(255, 255, 255, 0.1);
   --color-border-hover: rgba(192, 132, 252, 0.3);
 }

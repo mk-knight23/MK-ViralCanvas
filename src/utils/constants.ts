@@ -4,13 +4,13 @@ export const STORAGE_KEYS = {
   FAVORITES: 'memelab-favorites',
 } as const;
 
+// Only shortcuts that are actually wired up are advertised here. Undo/redo
+// are handled in MemeGenerator; Escape closes the Settings dialog. Browser
+// combinations (Ctrl+R/S/D) are deliberately left to the browser.
 export const KEYBOARD_SHORTCUTS = [
-  { key: 'Ctrl + D', action: 'Download Meme' },
-  { key: 'Ctrl + R', action: 'Random Template' },
-  { key: 'Ctrl + S', action: 'Save to Favorites' },
+  { key: 'Ctrl + Z', action: 'Undo' },
+  { key: 'Ctrl + Y', action: 'Redo' },
   { key: 'Escape', action: 'Close Settings' },
-  { key: 'H', action: 'Toggle Help' },
-  { key: '?', action: 'Show Shortcuts' },
 ] as const;
 
 export const DEFAULT_TEMPLATES = [

@@ -89,7 +89,7 @@ export function ExportControls({
         <button
           onClick={onDownload}
           disabled={isExporting}
-          className="bg-brand-primary hover:bg-brand-accent text-white font-bold p-3 rounded-xl shadow-lg shadow-brand-primary/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-brand-cta hover:brightness-90 text-white font-bold p-3 rounded-xl shadow-lg shadow-brand-primary/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" /> {isExporting ? 'Exporting…' : 'Download'}
         </button>
