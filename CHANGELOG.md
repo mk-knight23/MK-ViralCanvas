@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - Dashboard strip with real local data: recent projects, total exports counter, storage usage estimate.
 - Test suite expanded from 1 to 41 tests (layer operations, project serialization round-trip, import validation, store history); in-memory Storage polyfill added to test setup.
 
+### Accessibility (WCAG 2.2 AA)
+- Named all editor form controls: the six layer-style sliders (font size, text rotation, stroke width, text opacity, horizontal/vertical position) and the Font/Weight selects now carry `aria-label`s (WCAG 4.1.2 / 1.3.1).
+- Restored keyboard focus visibility on the Font/Weight selects, the Artboard preset select, and the custom width/height inputs — replaced bare `outline-none` with the project's existing `focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary` recipe (WCAG 2.4.7).
+
 ## [2.3.0] - 2026-07-22
 - P0 upgrade pass: fixed brand spelling (Qazi → Kazi), removed stale deploy artifacts, replaced legacy Vercel builds config with modern SPA rewrites + security headers.
 - Truthful docs: real README, docs/ARCHITECTURE.md, docs/ANALYTICS.md, docs/PRIVACY.md, updated SECURITY.md.

@@ -42,7 +42,7 @@ export function ArtboardPicker() {
       <select
         value={artboard.presetId}
         onChange={e => handlePresetChange(e.target.value)}
-        className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2.5 text-sm outline-none cursor-pointer"
+        className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer"
         aria-label="Artboard preset"
       >
         {ARTBOARD_PRESETS.map(preset => (
@@ -63,7 +63,7 @@ export function ArtboardPicker() {
               max={MAX_ARTBOARD_SIZE}
               value={artboard.width}
               onChange={e => handleSizeChange('width', e.target.value)}
-              className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm outline-none"
+              className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none"
               aria-label="Custom artboard width"
             />
           </div>
@@ -75,7 +75,7 @@ export function ArtboardPicker() {
               max={MAX_ARTBOARD_SIZE}
               value={artboard.height}
               onChange={e => handleSizeChange('height', e.target.value)}
-              className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm outline-none"
+              className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none"
               aria-label="Custom artboard height"
             />
           </div>

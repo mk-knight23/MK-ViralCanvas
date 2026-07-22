@@ -562,7 +562,8 @@ export function MemeGenerator() {
                       value={selectedLayer?.fontFamily ?? FONT_OPTIONS[0].value}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ fontFamily: e.target.value })}
-                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm outline-none cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Font family"
+                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer disabled:cursor-not-allowed"
                     >
                       {FONT_OPTIONS.map(f => (
                         <option key={f.value} value={f.value}>
@@ -577,7 +578,8 @@ export function MemeGenerator() {
                       value={selectedLayer?.fontWeight ?? 900}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ fontWeight: Number(e.target.value) })}
-                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm outline-none cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Font weight"
+                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer disabled:cursor-not-allowed"
                     >
                       {WEIGHT_OPTIONS.map(w => (
                         <option key={w.value} value={w.value}>
@@ -600,6 +602,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.fontSize ?? 80}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ fontSize: parseInt(e.target.value) })}
+                      aria-label="Font size"
                       className="w-full"
                     />
                   </div>
@@ -614,6 +617,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.rotation ?? 0}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ rotation: parseInt(e.target.value) })}
+                      aria-label="Text rotation"
                       className="w-full"
                     />
                   </div>
@@ -675,6 +679,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.strokeWidth ?? 0}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ strokeWidth: parseInt(e.target.value) })}
+                      aria-label="Stroke width"
                       className="w-full mt-2"
                     />
                   </div>
@@ -693,6 +698,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.opacity ?? 1}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ opacity: Number(e.target.value) })}
+                      aria-label="Text opacity"
                       className="w-full"
                     />
                   </div>
@@ -729,6 +735,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.x ?? 50}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ x: parseInt(e.target.value) })}
+                      aria-label="Horizontal position"
                       className="w-full"
                     />
                   </div>
@@ -743,6 +750,7 @@ export function MemeGenerator() {
                       value={selectedLayer?.y ?? 50}
                       disabled={propertiesDisabled}
                       onChange={e => updateSelected({ y: parseInt(e.target.value) })}
+                      aria-label="Vertical position"
                       className="w-full"
                     />
                   </div>
