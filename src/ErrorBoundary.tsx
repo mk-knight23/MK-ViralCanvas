@@ -1,4 +1,4 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -17,10 +17,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
-  }
-
-  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
-    // Could send to error tracking service in production
   }
 
   render() {
