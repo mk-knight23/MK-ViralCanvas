@@ -1,7 +1,9 @@
 import { multiSourceSearch, getActiveSources, getCached, setCache } from '../_lib/memes.mjs';
+import { enforceRateLimit } from '../_lib/rateLimit.mjs';
 
-export default async function handler(_req, res) {
+export default async function handler(req, res) {
   try {
+    if (!enforceRateLimit(req, res)) return;
     const cacheKey = 'trending-memes';
     const cached = getCached(cacheKey);
     if (cached) {
