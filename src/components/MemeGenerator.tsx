@@ -260,7 +260,8 @@ export function MemeGenerator() {
     }
     setSearchLoading(true);
     try {
-      const results = catId === 'trending' ? await getTrendingMemes() : await getCategoryMemes(catId);
+      const results =
+        catId === 'trending' ? await getTrendingMemes() : await getCategoryMemes(catId);
       setCategoryMemes(results);
       if (results.length === 0) {
         addToast(`No memes found for ${catId}`, 'info');
@@ -698,7 +699,9 @@ export function MemeGenerator() {
                   <div className="flex items-end justify-between pb-1">
                     <span className="text-[10px] text-text-muted">Shadow</span>
                     <button
-                      onClick={() => updateSelected({ shadowEnabled: !selectedLayer?.shadowEnabled })}
+                      onClick={() =>
+                        updateSelected({ shadowEnabled: !selectedLayer?.shadowEnabled })
+                      }
                       disabled={propertiesDisabled}
                       className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed ${
                         selectedLayer?.shadowEnabled ? 'bg-brand-primary' : 'bg-border'
@@ -932,7 +935,9 @@ export function MemeGenerator() {
                       {'source' in m && (
                         <span
                           className="absolute top-1 right-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase"
-                          style={{ backgroundColor: SOURCE_COLORS[m.source as string] || '#7c3aed' }}
+                          style={{
+                            backgroundColor: SOURCE_COLORS[m.source as string] || '#7c3aed',
+                          }}
                         >
                           {m.source as string}
                         </span>
