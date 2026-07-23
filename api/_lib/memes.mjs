@@ -228,11 +228,17 @@ async function searchApify(query, num = 10) {
   const apiKey = process.env.APIFY_API_KEY;
   if (!apiKey) return [];
   try {
+    // Token goes in the Authorization header (supported per Apify API docs),
+    // never as a ?token= query param — query strings leak into access logs,
+    // proxies, and upstream request traces.
     const res = await safeFetch(
-      `https://api.apify.com/v2/acts/hooli~google-images-scraper/run-sync-get-dataset-items?token=${apiKey}`,
+      'https://api.apify.com/v2/acts/hooli~google-images-scraper/run-sync-get-dataset-items',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
         body: JSON.stringify({ queries: [query + ' meme'], maxResultsPerQuery: num }),
         timeoutMs: 45000,
       }
