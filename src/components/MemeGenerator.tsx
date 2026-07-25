@@ -133,7 +133,11 @@ function extensionForBlobType(type: string): string {
 
 export function MemeGenerator() {
   const { templates, setTemplates, addFavorite, favorites, removeFavorite } = useMemeStore();
-  const stats = useStatsStore();
+  // Narrow action selectors: zustand actions are stable references, so
+  // MemeGenerator never re-renders on stats changes (incl. the 1s ticker).
+  const recordMemeCreated = useStatsStore(s => s.recordMemeCreated);
+  const recordDownload = useStatsStore(s => s.recordDownload);
+  const recordFavorite = useStatsStore(s => s.addFavorite);
   const { addToast } = useToastStore();
 
   const project = useProjectStore(s => s.project);
@@ -174,10 +178,12 @@ export function MemeGenerator() {
 
   const bumpDashboard = useCallback(() => setDashboardKey(key => key + 1), []);
 
+  // Time-spent ticker: reads the action off the store imperatively so the
+  // interval is created once and no component subscribes to the tick.
   useEffect(() => {
-    const interval = setInterval(() => stats.addTimeSpent(1), 1000);
+    const interval = setInterval(() => useStatsStore.getState().addTimeSpent(1), 1000);
     return () => clearInterval(interval);
-  }, [stats]);
+  }, []);
 
   const handlersRef = useRef({
     undo: () => {},
@@ -317,7 +323,7 @@ export function MemeGenerator() {
     if (templates.length === 0) return;
     const random = templates[Math.floor(Math.random() * templates.length)];
     setTemplate(random);
-    stats.recordMemeCreated();
+    recordMemeCreated();
     addToast('Random template loaded!', 'success');
   };
 
@@ -361,7 +367,7 @@ export function MemeGenerator() {
           }
           saveAs(blob, `viralcanvas-${Date.now()}.${extension}`);
           incrementExportCount();
-          stats.recordDownload();
+          recordDownload();
           bumpDashboard();
           addToast('Image exported!', 'success');
         },
@@ -404,7 +410,7 @@ export function MemeGenerator() {
       bottomText: project.layers[1]?.text ?? '',
       date: new Date().toISOString(),
     });
-    stats.addFavorite();
+    recordFavorite();
     addToast('Saved to favorites!', 'success');
   };
 
@@ -431,7 +437,7 @@ export function MemeGenerator() {
           box_count: 2,
         });
         addToast('Image uploaded!', 'success');
-        stats.recordMemeCreated();
+        recordMemeCreated();
       };
       img.src = url;
     };
@@ -449,7 +455,7 @@ export function MemeGenerator() {
       box_count: 2,
     });
     setActiveTab('customize');
-    stats.recordMemeCreated();
+    recordMemeCreated();
   };
 
   const openProject = (id: string) => {

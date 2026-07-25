@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion';
 import { useSettingsStore } from '@/stores/settings';
-import { Smile, Zap, Moon, Sun, Settings, Sparkles, Download, Heart, Image } from 'lucide-react';
+import { Smile, Zap, Moon, Sun, Settings, Sparkles, Download, Heart } from 'lucide-react';
 import { MemeGenerator } from './components/MemeGenerator';
 import { SettingsPanel } from './components/SettingsPanel';
+import { StatsTicker } from './components/StatsTicker';
 import { ToastContainer } from './components/Toast';
-import { useStatsStore } from '@/stores/stats';
 
 export default function App() {
   const { isDarkMode, toggleDarkMode, toggleHelp, applyTheme } = useSettingsStore();
-  const stats = useStatsStore();
 
   return (
     <div
@@ -31,17 +30,7 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-4 mr-4 text-xs font-semibold text-text-muted">
-              <span className="flex items-center gap-1.5">
-                <Image className="w-3.5 h-3.5" /> {stats.totalMemesCreated}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Download className="w-3.5 h-3.5" /> {stats.totalDownloads}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5" /> {stats.totalFavorites}
-              </span>
-            </div>
+            <StatsTicker />
 
             <button
               onClick={() => {
