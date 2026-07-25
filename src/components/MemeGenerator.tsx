@@ -26,8 +26,6 @@ import {
   Undo2,
   Upload,
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { saveAs } from 'file-saver';
 import { useMemeStore } from '@/stores/memeStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useStatsStore } from '@/stores/stats';
@@ -117,6 +115,7 @@ const QUICK_COLORS = [
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
 const EXPORT_PAINT_DELAY_MS = 60;
+const SEARCH_ERROR_MESSAGE = 'Search unavailable — try again';
 
 const MIME_BY_FORMAT: Record<ExportFormat, string> = {
   png: 'image/png',
@@ -132,7 +131,11 @@ function extensionForBlobType(type: string): string {
 
 export function MemeGenerator() {
   const { templates, setTemplates, addFavorite, favorites, removeFavorite } = useMemeStore();
-  const stats = useStatsStore();
+  // Narrow action selectors: zustand actions are stable references, so
+  // MemeGenerator never re-renders on stats changes (incl. the 1s ticker).
+  const recordMemeCreated = useStatsStore(s => s.recordMemeCreated);
+  const recordDownload = useStatsStore(s => s.recordDownload);
+  const recordFavorite = useStatsStore(s => s.addFavorite);
   const { addToast } = useToastStore();
 
   const project = useProjectStore(s => s.project);
@@ -150,6 +153,7 @@ export function MemeGenerator() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('templates');
   const [categoryMemes, setCategoryMemes] = useState<SearchMeme[]>([]);
   const [showFavorites, setShowFavorites] = useState(true);
@@ -172,10 +176,12 @@ export function MemeGenerator() {
 
   const bumpDashboard = useCallback(() => setDashboardKey(key => key + 1), []);
 
+  // Time-spent ticker: reads the action off the store imperatively so the
+  // interval is created once and no component subscribes to the tick.
   useEffect(() => {
-    const interval = setInterval(() => stats.addTimeSpent(1), 1000);
+    const interval = setInterval(() => useStatsStore.getState().addTimeSpent(1), 1000);
     return () => clearInterval(interval);
-  }, [stats]);
+  }, []);
 
   const handlersRef = useRef({
     undo: () => {},
@@ -254,19 +260,22 @@ export function MemeGenerator() {
 
   const handleCategoryChange = async (catId: string) => {
     setActiveCategory(catId);
+    setSearchError(null);
     if (catId === 'templates') {
       setCategoryMemes([]);
       return;
     }
     setSearchLoading(true);
     try {
-      const results = catId === 'trending' ? await getTrendingMemes() : await getCategoryMemes(catId);
+      const results =
+        catId === 'trending' ? await getTrendingMemes() : await getCategoryMemes(catId);
       setCategoryMemes(results);
       if (results.length === 0) {
         addToast(`No memes found for ${catId}`, 'info');
       }
     } catch {
-      addToast('Failed to load memes', 'error');
+      setCategoryMemes([]);
+      setSearchError(SEARCH_ERROR_MESSAGE);
     } finally {
       setSearchLoading(false);
     }
@@ -276,6 +285,7 @@ export function MemeGenerator() {
     setSearchTerm(term);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (!term.trim()) {
+      setSearchError(null);
       if (activeCategory !== 'templates') {
         handleCategoryChange(activeCategory);
       }
@@ -283,6 +293,7 @@ export function MemeGenerator() {
     }
     searchTimerRef.current = setTimeout(async () => {
       setSearchLoading(true);
+      setSearchError(null);
       try {
         const results = await searchMemes(term);
         setCategoryMemes(results);
@@ -290,18 +301,27 @@ export function MemeGenerator() {
           addToast('No memes found. Try different keywords!', 'info');
         }
       } catch {
-        addToast('Search failed', 'error');
+        setCategoryMemes([]);
+        setSearchError(SEARCH_ERROR_MESSAGE);
       } finally {
         setSearchLoading(false);
       }
     }, 500);
   };
 
+  const retryBrowse = () => {
+    if (searchTerm.trim()) {
+      handleSearch(searchTerm);
+    } else {
+      handleCategoryChange(activeCategory);
+    }
+  };
+
   const handleRandom = () => {
     if (templates.length === 0) return;
     const random = templates[Math.floor(Math.random() * templates.length)];
     setTemplate(random);
-    stats.recordMemeCreated();
+    recordMemeCreated();
     addToast('Random template loaded!', 'success');
   };
 
@@ -310,6 +330,9 @@ export function MemeGenerator() {
     if (!el || el.clientWidth === 0) return null;
     setIsExporting(true);
     try {
+      // Loaded on demand: html2canvas (~49kB gzip) stays out of the
+      // startup bundle and is only fetched on the first export/copy.
+      const { default: html2canvas } = await import('html2canvas');
       await new Promise(resolve => setTimeout(resolve, EXPORT_PAINT_DELAY_MS));
       return await html2canvas(el, { useCORS: true, scale, backgroundColor: '#000000' });
     } finally {
@@ -326,6 +349,8 @@ export function MemeGenerator() {
     if (!el || el.clientWidth === 0) return;
     const { format, quality, multiplier } = exportOptions;
     try {
+      // file-saver shares the lazy export-canvas chunk with html2canvas.
+      const { saveAs } = await import('file-saver');
       const scale = (project.artboard.width * multiplier) / el.clientWidth;
       const canvas = await captureStage(scale);
       if (!canvas) return;
@@ -345,7 +370,7 @@ export function MemeGenerator() {
           }
           saveAs(blob, `viralcanvas-${Date.now()}.${extension}`);
           incrementExportCount();
-          stats.recordDownload();
+          recordDownload();
           bumpDashboard();
           addToast('Image exported!', 'success');
         },
@@ -388,7 +413,7 @@ export function MemeGenerator() {
       bottomText: project.layers[1]?.text ?? '',
       date: new Date().toISOString(),
     });
-    stats.addFavorite();
+    recordFavorite();
     addToast('Saved to favorites!', 'success');
   };
 
@@ -415,7 +440,7 @@ export function MemeGenerator() {
           box_count: 2,
         });
         addToast('Image uploaded!', 'success');
-        stats.recordMemeCreated();
+        recordMemeCreated();
       };
       img.src = url;
     };
@@ -433,7 +458,7 @@ export function MemeGenerator() {
       box_count: 2,
     });
     setActiveTab('customize');
-    stats.recordMemeCreated();
+    recordMemeCreated();
   };
 
   const openProject = (id: string) => {
@@ -698,7 +723,9 @@ export function MemeGenerator() {
                   <div className="flex items-end justify-between pb-1">
                     <span className="text-[10px] text-text-muted">Shadow</span>
                     <button
-                      onClick={() => updateSelected({ shadowEnabled: !selectedLayer?.shadowEnabled })}
+                      onClick={() =>
+                        updateSelected({ shadowEnabled: !selectedLayer?.shadowEnabled })
+                      }
                       disabled={propertiesDisabled}
                       className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed ${
                         selectedLayer?.shadowEnabled ? 'bg-brand-primary' : 'bg-border'
@@ -903,6 +930,16 @@ export function MemeGenerator() {
                 <div className="flex items-center justify-center py-12">
                   <RefreshCw className="w-6 h-6 animate-spin text-brand-primary" />
                 </div>
+              ) : searchError ? (
+                <div role="alert" className="text-center py-12 space-y-3">
+                  <p className="text-sm font-medium text-red-500">{searchError}</p>
+                  <button
+                    onClick={retryBrowse}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-cta text-white text-sm font-semibold hover:brightness-90 transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-4 h-4" /> Retry
+                  </button>
+                </div>
               ) : (
                 <div className="grid grid-cols-3 gap-2 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar">
                   {getDisplayMemes().map(m => (
@@ -932,7 +969,9 @@ export function MemeGenerator() {
                       {'source' in m && (
                         <span
                           className="absolute top-1 right-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase"
-                          style={{ backgroundColor: SOURCE_COLORS[m.source as string] || '#7c3aed' }}
+                          style={{
+                            backgroundColor: SOURCE_COLORS[m.source as string] || '#7c3aed',
+                          }}
                         >
                           {m.source as string}
                         </span>

@@ -11,6 +11,19 @@ All notable changes to this project will be documented in this file.
 - Dashboard strip with real local data: recent projects, total exports counter, storage usage estimate.
 - Test suite expanded from 1 to 41 tests (layer operations, project serialization round-trip, import validation, store history); in-memory Storage polyfill added to test setup.
 
+### Wave 2 P0 — reliability, performance, truthfulness
+- Routing: replaced the dead SPA rewrite with a canonical catch-all whose destination is `/` (required under `cleanUrls`).
+- Security: Apify token now sent via `Authorization` header instead of a query string; per-IP rate limiting on `/api/memes/*`.
+- API client: failures now throw a typed `ApiError` (path + HTTP status) instead of being swallowed as `[]`; the Browse UI shows a distinct "Search unavailable — try again" error state with Retry, separate from the "No memes found" empty state.
+- Performance: the per-second time ticker no longer re-renders the whole app — nav stats isolated into `StatsTicker` with per-field selectors, `MemeGenerator` uses stable action selectors, Settings statistics mount only while the dialog is open.
+- Performance: `html2canvas` (~48 kB gzip) and `file-saver` are now dynamic-imported at the export call sites and verified absent from the startup bundle.
+- Truthfulness: removed the false "AI-Powered — Smart templates" tile (no AI exists) and the `twitter:card summary_large_image` declaration that pointed at a non-existent OG image.
+- Cleanup: deleted never-imported modules (`src/utils/analytics.ts`, `src/components/common/*.jsx`, `public/css/premium-design.css`), an invalid `app.json`, an unused `firebase.json`, the fabricated `docs/FEATURES.md`, and dead `autoSave`/`highQualityExport` settings flags.
+- Branding: footer credits "Kazi Musharraf", GitHub link points at `mk-knight23/MK-ViralCanvas`, and the displayed version is injected from `package.json` via a Vite `define` (single source of truth, now 2.4.0).
+- Accessibility: the stored reduce-motion setting is now real — a "Reduce motion" switch in Settings drives framer-motion's `MotionConfig` (`'always'` when on, `'user'` otherwise so the OS `prefers-reduced-motion` preference is always honored).
+- Dependencies: `npm audit fix` (lockfile-only) resolves the critical vitest advisory plus high vite/ws/postcss/shell-quote advisories; remaining highs sit in the eslint@8 chain and need a breaking major.
+- Security: Content-Security-Policy header shipped from `vercel.json`, derived from actual usage and verified locally against the production build (see `docs/v3/CSP_NOTES.md`); the GTM/GA4 bootstrap moved from an inline `index.html` script into the bundle (`src/utils/loadAnalytics.ts`) so `script-src 'self'` needs no `'unsafe-inline'`.
+
 ### Accessibility (WCAG 2.2 AA)
 - Named all editor form controls: the six layer-style sliders (font size, text rotation, stroke width, text opacity, horizontal/vertical position) and the Font/Weight selects now carry `aria-label`s (WCAG 4.1.2 / 1.3.1).
 - Restored keyboard focus visibility on the Font/Weight selects, the Artboard preset select, and the custom width/height inputs — replaced bare `outline-none` with the project's existing `focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary` recipe (WCAG 2.4.7).

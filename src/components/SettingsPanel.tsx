@@ -5,6 +5,7 @@ import { useStatsStore } from '@/stores/stats';
 import { useAudio } from '@/hooks/useAudio';
 import { KEYBOARD_SHORTCUTS } from '@/utils/constants';
 import {
+  Accessibility,
   Volume2,
   Moon,
   Sun,
@@ -16,9 +17,68 @@ import {
   Settings,
 } from 'lucide-react';
 
+const formatTime = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
+/**
+ * Stats display isolated in its own component: it is only mounted while the
+ * dialog is open, so the per-second totalTimeSpent tick re-renders nothing
+ * when Settings is closed.
+ */
+function StatisticsSection({ playClick }: { playClick: () => void }) {
+  const stats = useStatsStore();
+
+  return (
+    <section>
+      <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+        <BarChart3 size={14} /> Statistics
+      </h3>
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          {
+            value: stats.totalMemesCreated,
+            label: 'Memes Created',
+            color: 'text-text-primary',
+          },
+          {
+            value: stats.totalDownloads,
+            label: 'Downloads',
+            color: 'text-brand-primary',
+          },
+          { value: stats.totalFavorites, label: 'Favorites', color: 'text-pink-500' },
+          {
+            value: formatTime(stats.totalTimeSpent),
+            label: 'Time Spent',
+            color: 'text-brand-accent',
+          },
+        ].map(stat => (
+          <div key={stat.label} className="bg-surface-secondary rounded-xl p-4 text-center">
+            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+            <div className="text-[10px] text-text-muted uppercase tracking-wider mt-1 font-semibold">
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={() => {
+          playClick();
+          stats.resetStats();
+        }}
+        className="mt-3 w-full flex items-center justify-center gap-2 p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors text-sm font-medium cursor-pointer"
+      >
+        <RotateCcw size={14} /> Reset Statistics
+      </button>
+    </section>
+  );
+}
+
 export function SettingsPanel() {
   const settings = useSettingsStore();
-  const stats = useStatsStore();
   const { playClick } = useAudio();
 
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -29,13 +89,6 @@ export function SettingsPanel() {
     { value: 'light' as const, label: 'Light', icon: Sun },
     { value: 'system' as const, label: 'System', icon: Monitor },
   ];
-
-  const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
 
   // While the dialog is open: lock background scroll, move focus into the
   // dialog, and restore focus to the trigger element when it closes.
@@ -198,48 +251,38 @@ export function SettingsPanel() {
 
               <section>
                 <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
-                  <BarChart3 size={14} /> Statistics
+                  <Accessibility size={14} /> Accessibility
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    {
-                      value: stats.totalMemesCreated,
-                      label: 'Memes Created',
-                      color: 'text-text-primary',
-                    },
-                    {
-                      value: stats.totalDownloads,
-                      label: 'Downloads',
-                      color: 'text-brand-primary',
-                    },
-                    { value: stats.totalFavorites, label: 'Favorites', color: 'text-pink-500' },
-                    {
-                      value: formatTime(stats.totalTimeSpent),
-                      label: 'Time Spent',
-                      color: 'text-brand-accent',
-                    },
-                  ].map(stat => (
-                    <div
-                      key={stat.label}
-                      className="bg-surface-secondary rounded-xl p-4 text-center"
-                    >
-                      <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                      <div className="text-[10px] text-text-muted uppercase tracking-wider mt-1 font-semibold">
-                        {stat.label}
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-xl">
+                  <div>
+                    <span className="font-medium text-sm block">Reduce motion</span>
+                    <span className="text-xs text-text-muted">
+                      Minimizes animations. Your system's reduce-motion preference is always
+                      respected.
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      playClick();
+                      settings.setReducedMotion(!settings.reducedMotion);
+                    }}
+                    className={`relative w-12 h-6 shrink-0 rounded-full transition-colors cursor-pointer ${
+                      settings.reducedMotion ? 'bg-brand-primary' : 'bg-border'
+                    }`}
+                    role="switch"
+                    aria-checked={settings.reducedMotion}
+                    aria-label="Reduce motion"
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+                        settings.reducedMotion ? 'translate-x-6' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    playClick();
-                    stats.resetStats();
-                  }}
-                  className="mt-3 w-full flex items-center justify-center gap-2 p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors text-sm font-medium cursor-pointer"
-                >
-                  <RotateCcw size={14} /> Reset Statistics
-                </button>
               </section>
+
+              <StatisticsSection playClick={playClick} />
 
               <section>
                 <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
@@ -262,7 +305,9 @@ export function SettingsPanel() {
             </div>
 
             <footer className="p-5 border-t border-border text-center">
-              <p className="text-xs text-text-muted">MK ViralCanvas v2.0 — Built with React + Vite</p>
+              <p className="text-xs text-text-muted">
+                MK ViralCanvas v{__APP_VERSION__} — Built with React + Vite
+              </p>
             </footer>
           </motion.div>
         </motion.div>

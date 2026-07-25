@@ -7,6 +7,7 @@ import {
   setCache,
   deduplicateResults,
 } from '../_lib/memes.mjs';
+import { enforceRateLimit } from '../_lib/rateLimit.mjs';
 
 function clampInt(v, min, max, dflt) {
   const n = parseInt(v, 10);
@@ -16,6 +17,7 @@ function clampInt(v, min, max, dflt) {
 
 export default async function handler(req, res) {
   try {
+    if (!enforceRateLimit(req, res)) return;
     const url = new URL(req.url, 'http://localhost');
     const q = (url.searchParams.get('q') || '').toString().slice(0, 200);
     const source = (url.searchParams.get('source') || 'all').toString().slice(0, 40);

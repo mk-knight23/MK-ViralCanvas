@@ -11,7 +11,6 @@ import {
   Save,
   Trash2,
 } from 'lucide-react';
-import { saveAs } from 'file-saver';
 import { useProjectStore } from '@/stores/projectStore';
 import { useToastStore } from '@/stores/toastStore';
 import { createProject, generateId, type ProjectMeta } from '@/types/project';
@@ -141,9 +140,10 @@ export function ProjectsMenu({ onProjectsChanged }: ProjectsMenuProps) {
     onProjectsChanged();
   };
 
-  const handleExportJson = () => {
+  const handleExportJson = async () => {
     const current = useProjectStore.getState().project;
     const blob = new Blob([serializeProject(current)], { type: 'application/json' });
+    const { saveAs } = await import('file-saver');
     saveAs(blob, fileNameForProject(current.name));
     addToast('Project exported as JSON', 'success');
   };

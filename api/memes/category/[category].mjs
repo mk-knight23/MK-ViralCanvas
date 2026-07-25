@@ -1,4 +1,5 @@
 import { CATEGORY_QUERIES, multiSourceSearch, getActiveSources, getCached, setCache } from '../../_lib/memes.mjs';
+import { enforceRateLimit } from '../../_lib/rateLimit.mjs';
 
 function clampInt(v, min, max, dflt) {
   const n = parseInt(v, 10);
@@ -8,6 +9,7 @@ function clampInt(v, min, max, dflt) {
 
 export default async function handler(req, res) {
   try {
+    if (!enforceRateLimit(req, res)) return;
     const url = new URL(req.url, 'http://localhost');
     const category = req.query?.category || url.pathname.split('/').pop();
     const query = CATEGORY_QUERIES[category];

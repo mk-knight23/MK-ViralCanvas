@@ -8,8 +8,6 @@ interface SettingsState {
   theme: ThemeMode;
   showHelp: boolean;
   reducedMotion: boolean;
-  autoSave: boolean;
-  highQualityExport: boolean;
   isDarkMode: boolean;
 
   toggleSound: () => void;
@@ -18,8 +16,6 @@ interface SettingsState {
   toggleHelp: () => void;
   toggleDarkMode: () => void;
   setReducedMotion: (value: boolean) => void;
-  setAutoSave: (value: boolean) => void;
-  setHighQualityExport: (value: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -29,8 +25,6 @@ export const useSettingsStore = create<SettingsState>()(
       theme: 'dark',
       showHelp: false,
       reducedMotion: false,
-      autoSave: true,
-      highQualityExport: false,
       isDarkMode: true,
 
       toggleSound: () => set(state => ({ soundEnabled: !state.soundEnabled })),
@@ -61,8 +55,6 @@ export const useSettingsStore = create<SettingsState>()(
         get().applyTheme();
       },
       setReducedMotion: value => set({ reducedMotion: value }),
-      setAutoSave: value => set({ autoSave: value }),
-      setHighQualityExport: value => set({ highQualityExport: value }),
     }),
     {
       name: 'memelab-settings',

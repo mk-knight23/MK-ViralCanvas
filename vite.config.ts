@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import pkg from './package.json';
 
 export default defineConfig({
   plugins: [react()],
+  // Single source of truth for the displayed app version: package.json.
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
   base: '/',
   server: {
@@ -29,8 +32,11 @@ export default defineConfig({
             if (id.includes('react-dom')) return 'react-dom';
             if (id.includes('/react/')) return 'react';
             if (id.includes('framer-motion')) return 'motion';
+            // html2canvas is only ever imported dynamically (export flow),
+            // so this chunk stays out of the startup path. file-saver is
+            // deliberately NOT grouped here: exporting a small project JSON
+            // must not pull the ~205kB canvas chunk.
             if (id.includes('html2canvas')) return 'export-canvas';
-            if (id.includes('file-saver')) return 'export-canvas';
             if (id.includes('lucide-react')) return 'icons';
             if (id.includes('zustand')) return 'store';
           }

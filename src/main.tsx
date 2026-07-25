@@ -5,11 +5,13 @@ import { ErrorBoundary } from './ErrorBoundary';
 import './index.css';
 import { useSettingsStore } from './stores/settings';
 import { useStatsStore } from './stores/stats';
+import { loadAnalytics } from './utils/loadAnalytics';
 
 function initializeApp() {
   const settings = useSettingsStore.getState();
   settings.applyTheme();
   useStatsStore.getState();
+  loadAnalytics();
 }
 
 initializeApp();
