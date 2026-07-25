@@ -21,16 +21,42 @@ export interface ApiResponse<T> {
 
 const BASE = '/api';
 
-async function fetchApi<T>(path: string): Promise<T[]> {
-  try {
-    const res = await fetch(`${BASE}${path}`);
-    const json: ApiResponse<T[]> = await res.json();
-    if (!json.success) throw new Error(json.error || 'API error');
-    return json.data;
-  } catch (err) {
-    console.error(`API error (${path}):`, err);
-    return [];
+/**
+ * Typed API failure. Thrown (never swallowed) so callers can distinguish
+ * "the request failed" from "the request succeeded with zero results".
+ */
+export class ApiError extends Error {
+  readonly path: string;
+  readonly status?: number;
+
+  constructor(message: string, path: string, status?: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.path = path;
+    this.status = status;
   }
+}
+
+async function fetchApi<T>(path: string): Promise<T[]> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`);
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : 'network request failed';
+    throw new ApiError(`Network error: ${reason}`, path);
+  }
+
+  let json: ApiResponse<T[]>;
+  try {
+    json = await res.json();
+  } catch {
+    throw new ApiError(`Invalid response body (HTTP ${res.status})`, path, res.status);
+  }
+
+  if (!res.ok || !json.success) {
+    throw new ApiError(json.error || `API error (HTTP ${res.status})`, path, res.status);
+  }
+  return json.data ?? [];
 }
 
 export async function getTemplates(): Promise<MemeTemplate[]> {
@@ -54,11 +80,5 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
 }
 
 export async function getActiveSources(): Promise<string[]> {
-  try {
-    const res = await fetch(`${BASE}/sources`);
-    const json: ApiResponse<string[]> = await res.json();
-    return json.success ? json.data : [];
-  } catch {
-    return [];
-  }
+  return fetchApi<string>('/sources');
 }

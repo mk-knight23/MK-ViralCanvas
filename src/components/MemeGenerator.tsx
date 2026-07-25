@@ -117,6 +117,7 @@ const QUICK_COLORS = [
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
 const EXPORT_PAINT_DELAY_MS = 60;
+const SEARCH_ERROR_MESSAGE = 'Search unavailable — try again';
 
 const MIME_BY_FORMAT: Record<ExportFormat, string> = {
   png: 'image/png',
@@ -150,6 +151,7 @@ export function MemeGenerator() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('templates');
   const [categoryMemes, setCategoryMemes] = useState<SearchMeme[]>([]);
   const [showFavorites, setShowFavorites] = useState(true);
@@ -254,6 +256,7 @@ export function MemeGenerator() {
 
   const handleCategoryChange = async (catId: string) => {
     setActiveCategory(catId);
+    setSearchError(null);
     if (catId === 'templates') {
       setCategoryMemes([]);
       return;
@@ -267,7 +270,8 @@ export function MemeGenerator() {
         addToast(`No memes found for ${catId}`, 'info');
       }
     } catch {
-      addToast('Failed to load memes', 'error');
+      setCategoryMemes([]);
+      setSearchError(SEARCH_ERROR_MESSAGE);
     } finally {
       setSearchLoading(false);
     }
@@ -277,6 +281,7 @@ export function MemeGenerator() {
     setSearchTerm(term);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (!term.trim()) {
+      setSearchError(null);
       if (activeCategory !== 'templates') {
         handleCategoryChange(activeCategory);
       }
@@ -284,6 +289,7 @@ export function MemeGenerator() {
     }
     searchTimerRef.current = setTimeout(async () => {
       setSearchLoading(true);
+      setSearchError(null);
       try {
         const results = await searchMemes(term);
         setCategoryMemes(results);
@@ -291,11 +297,20 @@ export function MemeGenerator() {
           addToast('No memes found. Try different keywords!', 'info');
         }
       } catch {
-        addToast('Search failed', 'error');
+        setCategoryMemes([]);
+        setSearchError(SEARCH_ERROR_MESSAGE);
       } finally {
         setSearchLoading(false);
       }
     }, 500);
+  };
+
+  const retryBrowse = () => {
+    if (searchTerm.trim()) {
+      handleSearch(searchTerm);
+    } else {
+      handleCategoryChange(activeCategory);
+    }
   };
 
   const handleRandom = () => {
@@ -905,6 +920,16 @@ export function MemeGenerator() {
               {searchLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <RefreshCw className="w-6 h-6 animate-spin text-brand-primary" />
+                </div>
+              ) : searchError ? (
+                <div role="alert" className="text-center py-12 space-y-3">
+                  <p className="text-sm font-medium text-red-500">{searchError}</p>
+                  <button
+                    onClick={retryBrowse}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-cta text-white text-sm font-semibold hover:brightness-90 transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-4 h-4" /> Retry
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-2 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar">
