@@ -34,4 +34,22 @@ describe('SettingsPanel dialog accessibility', () => {
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(useSettingsStore.getState().showHelp).toBe(false);
   });
+
+  it('wires the Reduce motion toggle to the settings store', async () => {
+    render(<SettingsPanel />);
+
+    act(() => {
+      useSettingsStore.setState({ showHelp: true, reducedMotion: false });
+    });
+
+    const toggle = await screen.findByRole('switch', { name: /reduce motion/i });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+
+    fireEvent.click(toggle);
+    expect(useSettingsStore.getState().reducedMotion).toBe(true);
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+
+    fireEvent.click(toggle);
+    expect(useSettingsStore.getState().reducedMotion).toBe(false);
+  });
 });

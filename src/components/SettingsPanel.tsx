@@ -5,6 +5,7 @@ import { useStatsStore } from '@/stores/stats';
 import { useAudio } from '@/hooks/useAudio';
 import { KEYBOARD_SHORTCUTS } from '@/utils/constants';
 import {
+  Accessibility,
   Volume2,
   Moon,
   Sun,
@@ -245,6 +246,39 @@ export function SettingsPanel() {
                       </span>
                     </button>
                   ))}
+                </div>
+              </section>
+
+              <section>
+                <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+                  <Accessibility size={14} /> Accessibility
+                </h3>
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-xl">
+                  <div>
+                    <span className="font-medium text-sm block">Reduce motion</span>
+                    <span className="text-xs text-text-muted">
+                      Minimizes animations. Your system's reduce-motion preference is always
+                      respected.
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      playClick();
+                      settings.setReducedMotion(!settings.reducedMotion);
+                    }}
+                    className={`relative w-12 h-6 shrink-0 rounded-full transition-colors cursor-pointer ${
+                      settings.reducedMotion ? 'bg-brand-primary' : 'bg-border'
+                    }`}
+                    role="switch"
+                    aria-checked={settings.reducedMotion}
+                    aria-label="Reduce motion"
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+                        settings.reducedMotion ? 'translate-x-6' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
               </section>
 

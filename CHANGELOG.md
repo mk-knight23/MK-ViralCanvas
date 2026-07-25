@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Truthfulness: removed the false "AI-Powered — Smart templates" tile (no AI exists) and the `twitter:card summary_large_image` declaration that pointed at a non-existent OG image.
 - Cleanup: deleted never-imported modules (`src/utils/analytics.ts`, `src/components/common/*.jsx`, `public/css/premium-design.css`), an invalid `app.json`, an unused `firebase.json`, the fabricated `docs/FEATURES.md`, and dead `autoSave`/`highQualityExport` settings flags.
 - Branding: footer credits "Kazi Musharraf", GitHub link points at `mk-knight23/MK-ViralCanvas`, and the displayed version is injected from `package.json` via a Vite `define` (single source of truth, now 2.4.0).
+- Accessibility: the stored reduce-motion setting is now real — a "Reduce motion" switch in Settings drives framer-motion's `MotionConfig` (`'always'` when on, `'user'` otherwise so the OS `prefers-reduced-motion` preference is always honored).
 
 ### Accessibility (WCAG 2.2 AA)
 - Named all editor form controls: the six layer-style sliders (font size, text rotation, stroke width, text opacity, horizontal/vertical position) and the Font/Weight selects now carry `aria-label`s (WCAG 4.1.2 / 1.3.1).
