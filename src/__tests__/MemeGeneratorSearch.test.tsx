@@ -37,9 +37,7 @@ describe('MemeGenerator search result states', () => {
   });
 
   it('shows a distinct error state when the API fails (not the empty state)', async () => {
-    vi.mocked(searchMemes).mockRejectedValue(
-      new ApiError('upstream down', '/memes/search', 502)
-    );
+    vi.mocked(searchMemes).mockRejectedValue(new ApiError('upstream down', '/memes/search', 502));
     await searchFor('drake');
 
     expect(
