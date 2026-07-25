@@ -26,8 +26,6 @@ import {
   Undo2,
   Upload,
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { saveAs } from 'file-saver';
 import { useMemeStore } from '@/stores/memeStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useStatsStore } from '@/stores/stats';
@@ -332,6 +330,9 @@ export function MemeGenerator() {
     if (!el || el.clientWidth === 0) return null;
     setIsExporting(true);
     try {
+      // Loaded on demand: html2canvas (~49kB gzip) stays out of the
+      // startup bundle and is only fetched on the first export/copy.
+      const { default: html2canvas } = await import('html2canvas');
       await new Promise(resolve => setTimeout(resolve, EXPORT_PAINT_DELAY_MS));
       return await html2canvas(el, { useCORS: true, scale, backgroundColor: '#000000' });
     } finally {
@@ -348,6 +349,8 @@ export function MemeGenerator() {
     if (!el || el.clientWidth === 0) return;
     const { format, quality, multiplier } = exportOptions;
     try {
+      // file-saver shares the lazy export-canvas chunk with html2canvas.
+      const { saveAs } = await import('file-saver');
       const scale = (project.artboard.width * multiplier) / el.clientWidth;
       const canvas = await captureStage(scale);
       if (!canvas) return;
