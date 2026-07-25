@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Cleanup: deleted never-imported modules (`src/utils/analytics.ts`, `src/components/common/*.jsx`, `public/css/premium-design.css`), an invalid `app.json`, an unused `firebase.json`, the fabricated `docs/FEATURES.md`, and dead `autoSave`/`highQualityExport` settings flags.
 - Branding: footer credits "Kazi Musharraf", GitHub link points at `mk-knight23/MK-ViralCanvas`, and the displayed version is injected from `package.json` via a Vite `define` (single source of truth, now 2.4.0).
 - Accessibility: the stored reduce-motion setting is now real — a "Reduce motion" switch in Settings drives framer-motion's `MotionConfig` (`'always'` when on, `'user'` otherwise so the OS `prefers-reduced-motion` preference is always honored).
+- Dependencies: `npm audit fix` (lockfile-only) resolves the critical vitest advisory plus high vite/ws/postcss/shell-quote advisories; remaining highs sit in the eslint@8 chain and need a breaking major.
+- Security: Content-Security-Policy header shipped from `vercel.json`, derived from actual usage and verified locally against the production build (see `docs/v3/CSP_NOTES.md`); the GTM/GA4 bootstrap moved from an inline `index.html` script into the bundle (`src/utils/loadAnalytics.ts`) so `script-src 'self'` needs no `'unsafe-inline'`.
 
 ### Accessibility (WCAG 2.2 AA)
 - Named all editor form controls: the six layer-style sliders (font size, text rotation, stroke width, text opacity, horizontal/vertical position) and the Font/Weight selects now carry `aria-label`s (WCAG 4.1.2 / 1.3.1).

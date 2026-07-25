@@ -11,7 +11,7 @@ This project ships with **no analytics enabled by default**. Nothing is loaded u
 | Google Tag Manager | Set `VITE_GTM_ID=GTM-XXXX` at build time | Whatever the GTM container is configured to send |
 | Google Analytics 4 | Set `VITE_GA4_ID=G-XXXX` at build time | GA4 default events + any custom `gtag()` calls |
 
-The activation checks in `index.html` explicitly reject the placeholder token `%VITE_GTM_ID%` and require valid GTM/GA4 id shapes, so unset variables never fire a network request.
+The activation checks in `src/utils/loadAnalytics.ts` (called from `src/main.tsx`) require valid GTM/GA4 id shapes, so unset variables never fire a network request. The loader lives in the bundle rather than an inline `index.html` script so the Content-Security-Policy does not need `'unsafe-inline'` for scripts. Note: the shipped CSP in `vercel.json` is `script-src 'self'` — enabling GTM/GA4 also requires adding the Google hosts to `script-src`/`connect-src` (see `docs/v3/CSP_NOTES.md`).
 
 ## What is never sent, by design
 
