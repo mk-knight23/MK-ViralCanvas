@@ -102,11 +102,13 @@ export default function App() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2 text-text-muted">
               <Smile size={18} />
-              <span className="font-display font-bold text-sm">MK ViralCanvas v2.0</span>
+              <span className="font-display font-bold text-sm">
+                MK ViralCanvas v{__APP_VERSION__}
+              </span>
             </div>
             <div className="flex items-center gap-4 text-xs text-text-muted">
               <a
-                href="https://github.com/mk-knight23/19-web-viral-creator"
+                href="https://github.com/mk-knight23/MK-ViralCanvas"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-brand-primary transition-colors"
@@ -126,7 +128,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="hover:text-brand-primary transition-colors"
               >
-                Kazi Musharraf — Kazi Developer
+                Kazi Musharraf
               </a>
               . All rights reserved.
             </p>

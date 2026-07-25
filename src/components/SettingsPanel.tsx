@@ -272,7 +272,7 @@ export function SettingsPanel() {
 
             <footer className="p-5 border-t border-border text-center">
               <p className="text-xs text-text-muted">
-                MK ViralCanvas v2.0 — Built with React + Vite
+                MK ViralCanvas v{__APP_VERSION__} — Built with React + Vite
               </p>
             </footer>
           </motion.div>

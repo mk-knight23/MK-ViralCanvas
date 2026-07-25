@@ -1,7 +1,7 @@
 {
   "name": "19-web-viral-creator",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.4.0",
   "type": "module",
   "engines": {
     "node": "20.x"
