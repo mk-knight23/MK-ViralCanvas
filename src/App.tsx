@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useSettingsStore } from '@/stores/settings';
-import { Smile, Zap, Moon, Sun, Settings, Sparkles, Download, Heart } from 'lucide-react';
+import { Smile, Zap, Moon, Sun, Settings, Download, Heart } from 'lucide-react';
 import { MemeGenerator } from './components/MemeGenerator';
 import { SettingsPanel } from './components/SettingsPanel';
 import { StatsTicker } from './components/StatsTicker';
@@ -83,10 +83,9 @@ export default function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4"
         >
           {[
-            { icon: Sparkles, label: 'AI-Powered', desc: 'Smart templates' },
             { icon: Download, label: 'HD Export', desc: 'High quality PNG' },
             { icon: Heart, label: 'Favorites', desc: 'Save your best' },
             { icon: Zap, label: 'Instant', desc: 'No signup needed' },
@@ -106,14 +105,30 @@ export default function App() {
               <span className="font-display font-bold text-sm">MK ViralCanvas v2.0</span>
             </div>
             <div className="flex items-center gap-4 text-xs text-text-muted">
-              <a href="https://github.com/mk-knight23/19-web-viral-creator" target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary transition-colors">GitHub</a>
+              <a
+                href="https://github.com/mk-knight23/19-web-viral-creator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-brand-primary transition-colors"
+              >
+                GitHub
+              </a>
               <span>·</span>
               <span>No data collected</span>
               <span>·</span>
               <span>Free & open-source</span>
             </div>
             <p className="text-text-muted text-xs">
-              © 2026 <a href="https://www.mkazi.live" target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary transition-colors">Kazi Musharraf — Kazi Developer</a>. All rights reserved.
+              © 2026{' '}
+              <a
+                href="https://www.mkazi.live"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-brand-primary transition-colors"
+              >
+                Kazi Musharraf — Kazi Developer
+              </a>
+              . All rights reserved.
             </p>
           </div>
         </footer>
