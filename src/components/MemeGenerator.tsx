@@ -40,16 +40,10 @@ import {
 import { findLayer } from '@/utils/layers';
 import { isTextLayer } from '@/types/project';
 import { isEditableTarget } from '@/utils/keyboard';
-import { html2canvasRasterizer } from '@/renderer/html2canvasRasterizer';
-import {
-  getLastProjectId,
-  incrementExportCount,
-  loadProject,
-  saveProject,
-  setLastProjectId,
-} from '@/utils/projectStorage';
+import { useMemeExport } from '@/hooks/useMemeExport';
+import { getLastProjectId, loadProject, saveProject, setLastProjectId } from '@/utils/projectStorage';
 import type { MemeTemplate } from '@/types/meme';
-import type { ExportFormat, ExportOptions } from '@/types/project';
+import type { ExportOptions } from '@/types/project';
 import type { SearchMeme } from '@/utils/api';
 import { ArtboardPicker } from './editor/ArtboardPicker';
 import { CanvasStage } from './editor/CanvasStage';
@@ -118,24 +112,11 @@ const QUICK_COLORS = [
 const AUTOSAVE_DEBOUNCE_MS = 800;
 const SEARCH_ERROR_MESSAGE = 'Search unavailable — try again';
 
-const MIME_BY_FORMAT: Record<ExportFormat, string> = {
-  png: 'image/png',
-  jpeg: 'image/jpeg',
-  webp: 'image/webp',
-};
-
-function extensionForBlobType(type: string): string {
-  if (type === 'image/webp') return 'webp';
-  if (type === 'image/jpeg') return 'jpg';
-  return 'png';
-}
-
 export function MemeGenerator() {
   const { templates, setTemplates, addFavorite, favorites, removeFavorite } = useMemeStore();
   // Narrow action selectors: zustand actions are stable references, so
   // MemeGenerator never re-renders on stats changes (incl. the 1s ticker).
   const recordMemeCreated = useStatsStore(s => s.recordMemeCreated);
-  const recordDownload = useStatsStore(s => s.recordDownload);
   const recordFavorite = useStatsStore(s => s.addFavorite);
   const { addToast } = useToastStore();
 
@@ -168,7 +149,6 @@ export function MemeGenerator() {
     quality: 0.92,
     multiplier: 1,
   });
-  const [isExporting, setIsExporting] = useState(false);
   const [dashboardKey, setDashboardKey] = useState(0);
 
   const stageRef = useRef<HTMLDivElement>(null);
@@ -178,6 +158,12 @@ export function MemeGenerator() {
   const autosaveWarnedRef = useRef(false);
 
   const bumpDashboard = useCallback(() => setDashboardKey(key => key + 1), []);
+
+  const { isExporting, downloadImage, copyToClipboard } = useMemeExport({
+    stageRef,
+    options: exportOptions,
+    onExported: bumpDashboard,
+  });
 
   // Time-spent ticker: reads the action off the store imperatively so the
   // interval is created once and no component subscribes to the tick.
@@ -328,84 +314,6 @@ export function MemeGenerator() {
     setTemplate(random);
     recordMemeCreated();
     addToast('Random template loaded!', 'success');
-  };
-
-  const captureStage = async (scale: number): Promise<HTMLCanvasElement | null> => {
-    const el = stageRef.current;
-    if (!el || el.clientWidth === 0) return null;
-    setIsExporting(true);
-    try {
-      // The rasterizer captures the same painted DOM the preview renders
-      // (shared layer-render models), keeping export and preview in sync.
-      // Its html2canvas backend stays lazily loaded on first export/copy.
-      return await html2canvasRasterizer.rasterize(el, { scale });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    if (!project.template) {
-      addToast('Pick a template or upload an image first', 'info');
-      return;
-    }
-    const el = stageRef.current;
-    if (!el || el.clientWidth === 0) return;
-    const { format, quality, multiplier } = exportOptions;
-    try {
-      // file-saver shares the lazy export-canvas chunk with html2canvas.
-      const { saveAs } = await import('file-saver');
-      const scale = (project.artboard.width * multiplier) / el.clientWidth;
-      const canvas = await captureStage(scale);
-      if (!canvas) return;
-      canvas.toBlob(
-        blob => {
-          if (!blob) {
-            addToast('Export failed', 'error');
-            return;
-          }
-          const requestedMime = MIME_BY_FORMAT[format];
-          const extension = extensionForBlobType(blob.type);
-          if (blob.type !== requestedMime) {
-            addToast(
-              `${format.toUpperCase()} not supported by this browser — saved as ${extension.toUpperCase()}`,
-              'info'
-            );
-          }
-          saveAs(blob, `viralcanvas-${Date.now()}.${extension}`);
-          incrementExportCount();
-          recordDownload();
-          bumpDashboard();
-          addToast('Image exported!', 'success');
-        },
-        MIME_BY_FORMAT[format],
-        format === 'png' ? undefined : quality
-      );
-    } catch {
-      addToast('Export failed', 'error');
-    }
-  };
-
-  const handleCopyToClipboard = async () => {
-    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
-      addToast('Clipboard not supported. Use download instead.', 'info');
-      return;
-    }
-    const el = stageRef.current;
-    if (!el || el.clientWidth === 0 || !project.template) return;
-    try {
-      const scale = project.artboard.width / el.clientWidth;
-      const canvas = await captureStage(scale);
-      if (!canvas) return;
-      canvas.toBlob(async blob => {
-        if (blob) {
-          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-          addToast('Copied to clipboard!', 'success');
-        }
-      });
-    } catch {
-      addToast('Copy failed', 'error');
-    }
   };
 
   const handleFavorite = () => {
@@ -805,8 +713,8 @@ export function MemeGenerator() {
               <ExportControls
                 options={exportOptions}
                 onOptionsChange={setExportOptions}
-                onDownload={handleDownload}
-                onCopy={handleCopyToClipboard}
+                onDownload={downloadImage}
+                onCopy={copyToClipboard}
                 isExporting={isExporting}
               />
 
