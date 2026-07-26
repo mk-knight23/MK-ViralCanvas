@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ImageIcon } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
+import { isTextLayer } from '@/types/project';
 
 const MEME_TEXT_SHADOW = '0 0 8px rgba(0,0,0,0.8), 2px 2px 4px rgba(0,0,0,0.6)';
 const SELECTION_OUTLINE = '2px dashed rgba(147, 51, 234, 0.9)';
@@ -120,6 +121,8 @@ export function CanvasStage({ stageRef, hideChrome }: CanvasStageProps) {
 
       {scale > 0 &&
         layers.map(layer => {
+          // Image/shape rendering lands with the shared renderer abstraction.
+          if (!isTextLayer(layer)) return null;
           if (layer.hidden || layer.text.length === 0) return null;
           const isSelected = layer.id === selectedLayerId && !hideChrome;
           return (

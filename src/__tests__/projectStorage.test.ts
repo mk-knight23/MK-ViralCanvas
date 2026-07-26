@@ -104,7 +104,7 @@ describe('import validation', () => {
       const layer = result.project.layers[0];
       expect(layer.x).toBe(100);
       expect(layer.y).toBe(0);
-      expect(layer.fontSize).toBe(600);
+      expect(layer.type === 'text' && layer.fontSize).toBe(600);
       expect(layer.opacity).toBe(1);
     }
   });

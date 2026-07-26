@@ -1,42 +1,46 @@
-import type { TextLayer } from '@/types/project';
+import type { Layer, TextLayer } from '@/types/project';
 import { MAX_LAYERS, createTextLayer, generateId } from '@/types/project';
 
 export type LayerDirection = 'up' | 'down';
 
 /**
- * Pure, immutable operations on text-layer arrays.
+ * A partial update for a layer. Base fields (x, y, opacity, …) apply to any
+ * layer type; the text-specific fields only ever reach text layers because
+ * the style editor operates on the selected text layer.
+ */
+export type LayerUpdates = Partial<Omit<TextLayer, 'id' | 'type'>>;
+
+/**
+ * Pure, immutable operations on layer arrays.
  * Every function returns a new array and never mutates its input.
  */
 
 export function addLayer(
-  layers: readonly TextLayer[],
-  overrides: Partial<TextLayer> = {}
-): TextLayer[] {
+  layers: readonly Layer[],
+  overrides: Partial<Omit<TextLayer, 'type'>> = {}
+): Layer[] {
   if (layers.length >= MAX_LAYERS) return [...layers];
   return [...layers, createTextLayer(overrides)];
 }
 
-export function removeLayer(layers: readonly TextLayer[], id: string): TextLayer[] {
+export function removeLayer(layers: readonly Layer[], id: string): Layer[] {
   return layers.filter(layer => layer.id !== id);
 }
 
-export function updateLayer(
-  layers: readonly TextLayer[],
-  id: string,
-  updates: Partial<Omit<TextLayer, 'id'>>
-): TextLayer[] {
-  return layers.map(layer => (layer.id === id ? { ...layer, ...updates, id: layer.id } : layer));
+export function updateLayer(layers: readonly Layer[], id: string, updates: LayerUpdates): Layer[] {
+  return layers.map(layer => {
+    if (layer.id !== id) return layer;
+    // The discriminant and id always win over the patch, so the variant is
+    // preserved; the cast re-narrows the merged object back to the union.
+    return { ...layer, ...updates, id: layer.id, type: layer.type } as Layer;
+  });
 }
 
 /**
  * Moves a layer one step towards the start ('up') or the end ('down') of the list.
  * No-op (returns a copy) when the layer is missing or already at the boundary.
  */
-export function moveLayer(
-  layers: readonly TextLayer[],
-  id: string,
-  direction: LayerDirection
-): TextLayer[] {
+export function moveLayer(layers: readonly Layer[], id: string, direction: LayerDirection): Layer[] {
   const index = layers.findIndex(layer => layer.id === id);
   const target = direction === 'up' ? index - 1 : index + 1;
   if (index === -1 || target < 0 || target >= layers.length) return [...layers];
@@ -50,11 +54,11 @@ export function moveLayer(
  * Inserts a copy of the layer directly after the original.
  * The copy gets a fresh id, is unlocked, and is nudged slightly so it is visible.
  */
-export function duplicateLayer(layers: readonly TextLayer[], id: string): TextLayer[] {
+export function duplicateLayer(layers: readonly Layer[], id: string): Layer[] {
   const index = layers.findIndex(layer => layer.id === id);
   if (index === -1 || layers.length >= MAX_LAYERS) return [...layers];
   const source = layers[index];
-  const copy: TextLayer = {
+  const copy: Layer = {
     ...source,
     id: generateId('layer'),
     y: Math.min(100, source.y + 4),
@@ -65,7 +69,7 @@ export function duplicateLayer(layers: readonly TextLayer[], id: string): TextLa
   return next;
 }
 
-export function findLayer(layers: readonly TextLayer[], id: string | null): TextLayer | undefined {
+export function findLayer(layers: readonly Layer[], id: string | null): Layer | undefined {
   if (id === null) return undefined;
   return layers.find(layer => layer.id === id);
 }

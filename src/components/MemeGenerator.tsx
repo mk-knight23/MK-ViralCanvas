@@ -38,6 +38,7 @@ import {
   searchMemes,
 } from '@/utils/api';
 import { findLayer } from '@/utils/layers';
+import { isTextLayer } from '@/types/project';
 import { isEditableTarget } from '@/utils/keyboard';
 import {
   getLastProjectId,
@@ -148,7 +149,9 @@ export function MemeGenerator() {
   const canUndo = useProjectStore(s => s.historyIndex > 0);
   const canRedo = useProjectStore(s => s.historyIndex < s.history.length - 1);
 
-  const selectedLayer = findLayer(project.layers, selectedLayerId ?? null);
+  const foundLayer = findLayer(project.layers, selectedLayerId ?? null);
+  // The style panel edits text properties, so it only operates on text layers.
+  const selectedLayer = foundLayer && isTextLayer(foundLayer) ? foundLayer : undefined;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -239,7 +242,9 @@ export function MemeGenerator() {
 
   // Debounced autosave of the current project.
   useEffect(() => {
-    const isPristine = !project.template && project.layers.every(layer => layer.text.length === 0);
+    const isPristine =
+      !project.template &&
+      project.layers.every(layer => isTextLayer(layer) && layer.text.length === 0);
     if (isPristine) return;
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     autosaveTimerRef.current = setTimeout(() => {
@@ -406,11 +411,12 @@ export function MemeGenerator() {
 
   const handleFavorite = () => {
     if (!project.template) return;
+    const [first, second] = project.layers;
     addFavorite({
       id: Math.random().toString(36).substring(2, 9),
       image: project.template.url,
-      topText: project.layers[0]?.text ?? '',
-      bottomText: project.layers[1]?.text ?? '',
+      topText: first && isTextLayer(first) ? first.text : '',
+      bottomText: second && isTextLayer(second) ? second.text : '',
       date: new Date().toISOString(),
     });
     recordFavorite();
