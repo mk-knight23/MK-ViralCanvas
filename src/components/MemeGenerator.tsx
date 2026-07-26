@@ -39,9 +39,10 @@ import {
 } from '@/utils/api';
 import { findLayer } from '@/utils/layers';
 import { isTextLayer } from '@/types/project';
-import { isEditableTarget } from '@/utils/keyboard';
+import { useAutosave } from '@/hooks/useAutosave';
 import { useMemeExport } from '@/hooks/useMemeExport';
-import { getLastProjectId, loadProject, saveProject, setLastProjectId } from '@/utils/projectStorage';
+import { useUndoRedoShortcuts } from '@/hooks/useUndoRedoShortcuts';
+import { getLastProjectId, loadProject, setLastProjectId } from '@/utils/projectStorage';
 import type { MemeTemplate } from '@/types/meme';
 import type { ExportOptions } from '@/types/project';
 import type { SearchMeme } from '@/utils/api';
@@ -109,7 +110,6 @@ const QUICK_COLORS = [
   '#ff00ff',
 ];
 
-const AUTOSAVE_DEBOUNCE_MS = 800;
 const SEARCH_ERROR_MESSAGE = 'Search unavailable — try again';
 
 export function MemeGenerator() {
@@ -154,10 +154,11 @@ export function MemeGenerator() {
   const stageRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autosaveWarnedRef = useRef(false);
 
   const bumpDashboard = useCallback(() => setDashboardKey(key => key + 1), []);
+
+  useAutosave(bumpDashboard);
+  useUndoRedoShortcuts();
 
   const { isExporting, downloadImage, copyToClipboard } = useMemeExport({
     stageRef,
@@ -170,31 +171,6 @@ export function MemeGenerator() {
   useEffect(() => {
     const interval = setInterval(() => useStatsStore.getState().addTimeSpent(1), 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  const handlersRef = useRef({
-    undo: () => {},
-    redo: () => {},
-  });
-
-  // Only undo/redo are bound globally. Browser-reserved combos (Ctrl+R
-  // reload, Ctrl+S save, Ctrl+D bookmark) are intentionally left alone, and
-  // shortcuts never fire while the user is typing in an editable control.
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return;
-      if (isEditableTarget(e.target)) return;
-      const key = e.key.toLowerCase();
-      if (key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        handlersRef.current.undo();
-      } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
-        e.preventDefault();
-        handlersRef.current.redo();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   // Initial load: restore the last project, then fetch templates for browsing.
@@ -225,29 +201,6 @@ export function MemeGenerator() {
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setTemplates, setProject]);
-
-  // Debounced autosave of the current project.
-  useEffect(() => {
-    const isPristine =
-      !project.template &&
-      project.layers.every(layer => isTextLayer(layer) && layer.text.length === 0);
-    if (isPristine) return;
-    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-    autosaveTimerRef.current = setTimeout(() => {
-      const current = useProjectStore.getState().project;
-      if (saveProject(current)) {
-        setLastProjectId(current.id);
-        autosaveWarnedRef.current = false;
-        bumpDashboard();
-      } else if (!autosaveWarnedRef.current) {
-        autosaveWarnedRef.current = true;
-        addToast('Autosave failed — browser storage may be full', 'error');
-      }
-    }, AUTOSAVE_DEBOUNCE_MS);
-    return () => {
-      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-    };
-  }, [project, addToast, bumpDashboard]);
 
   const handleCategoryChange = async (catId: string) => {
     setActiveCategory(catId);
@@ -329,8 +282,6 @@ export function MemeGenerator() {
     recordFavorite();
     addToast('Saved to favorites!', 'success');
   };
-
-  handlersRef.current = { undo, redo };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
