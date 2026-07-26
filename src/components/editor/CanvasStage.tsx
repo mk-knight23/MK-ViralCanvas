@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { ImageIcon } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
-import { isTextLayer } from '@/types/project';
+import { buildLayerRenderModel } from '@/renderer/layerRenderModel';
+import type { LayerRenderModel } from '@/renderer/types';
 
-const MEME_TEXT_SHADOW = '0 0 8px rgba(0,0,0,0.8), 2px 2px 4px rgba(0,0,0,0.6)';
 const SELECTION_OUTLINE = '2px dashed rgba(147, 51, 234, 0.9)';
 
 interface DragState {
@@ -17,7 +17,7 @@ interface DragState {
 
 interface CanvasStageProps {
   stageRef: React.RefObject<HTMLDivElement | null>;
-  /** Hides selection chrome while html2canvas captures the stage. */
+  /** Hides selection chrome while the rasterizer captures the stage. */
   hideChrome: boolean;
 }
 
@@ -25,9 +25,16 @@ function clampPercent(value: number): number {
   return Math.min(100, Math.max(0, value));
 }
 
+function layerAriaLabel(model: LayerRenderModel): string {
+  if (model.kind === 'text') return `Text layer: ${model.text}`;
+  return `${model.kind === 'image' ? 'Image' : 'Shape'} layer`;
+}
+
 /**
- * Artboard preview. Renders at a scaled-to-fit size while all text metrics are
+ * Artboard preview. Renders at a scaled-to-fit size while all metrics are
  * defined in artboard pixels, so exports at true dimensions stay accurate.
+ * All visual layer properties come from the shared render model
+ * (src/renderer/layerRenderModel.ts) that exports also rasterize.
  */
 export function CanvasStage({ stageRef, hideChrome }: CanvasStageProps) {
   const project = useProjectStore(s => s.project);
@@ -121,45 +128,89 @@ export function CanvasStage({ stageRef, hideChrome }: CanvasStageProps) {
 
       {scale > 0 &&
         layers.map(layer => {
-          // Image/shape rendering lands with the shared renderer abstraction.
-          if (!isTextLayer(layer)) return null;
-          if (layer.hidden || layer.text.length === 0) return null;
+          const model = buildLayerRenderModel(layer, scale);
+          if (model === null) return null;
           const isSelected = layer.id === selectedLayerId && !hideChrome;
+          const sharedStyle: React.CSSProperties = {
+            left: `${model.leftPercent}%`,
+            top: `${model.topPercent}%`,
+            transform: model.transform,
+            opacity: model.opacity,
+            touchAction: 'none',
+            outline: isSelected ? SELECTION_OUTLINE : undefined,
+            outlineOffset: isSelected ? 4 : undefined,
+            zIndex: 10,
+          };
+          const interactionProps = {
+            role: 'button' as const,
+            tabIndex: 0,
+            'aria-label': layerAriaLabel(model),
+            onPointerDown: (e: React.PointerEvent<HTMLDivElement>) =>
+              handlePointerDown(e, layer.id),
+            onPointerMove: handlePointerMove,
+            onPointerUp: endDrag,
+            onPointerCancel: endDrag,
+          };
+          const cursorClass = model.interactive ? 'cursor-move' : 'cursor-not-allowed';
+
+          if (model.kind === 'text') {
+            return (
+              <div
+                key={layer.id}
+                {...interactionProps}
+                className={`absolute font-black text-center uppercase whitespace-pre leading-tight ${cursorClass}`}
+                style={{
+                  ...sharedStyle,
+                  fontSize: `${model.fontSizePx}px`,
+                  fontFamily: model.fontFamily,
+                  fontWeight: model.fontWeight,
+                  color: model.color,
+                  WebkitTextStroke: model.webkitTextStroke,
+                  textShadow: model.textShadow,
+                }}
+              >
+                {model.text}
+              </div>
+            );
+          }
+
+          if (model.kind === 'image') {
+            return (
+              <div
+                key={layer.id}
+                {...interactionProps}
+                className={`absolute ${cursorClass}`}
+                style={{
+                  ...sharedStyle,
+                  width: `${model.widthPercent}%`,
+                  height: `${model.heightPercent}%`,
+                }}
+              >
+                <img
+                  src={model.url}
+                  alt=""
+                  className="w-full h-full object-contain pointer-events-none"
+                  crossOrigin="anonymous"
+                  draggable={false}
+                />
+              </div>
+            );
+          }
+
           return (
             <div
               key={layer.id}
-              role="button"
-              tabIndex={0}
-              aria-label={`Text layer: ${layer.text}`}
-              onPointerDown={e => handlePointerDown(e, layer.id)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              className={`absolute font-black text-center uppercase whitespace-pre leading-tight ${
-                layer.locked ? 'cursor-not-allowed' : 'cursor-move'
-              }`}
+              {...interactionProps}
+              className={`absolute ${cursorClass}`}
               style={{
-                left: `${layer.x}%`,
-                top: `${layer.y}%`,
-                transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
-                fontSize: `${layer.fontSize * scale}px`,
-                fontFamily: layer.fontFamily,
-                fontWeight: layer.fontWeight,
-                color: layer.color,
-                opacity: layer.opacity,
-                WebkitTextStroke:
-                  layer.strokeWidth > 0
-                    ? `${layer.strokeWidth * scale}px ${layer.strokeColor}`
-                    : undefined,
-                textShadow: layer.shadowEnabled ? MEME_TEXT_SHADOW : undefined,
-                touchAction: 'none',
-                outline: isSelected ? SELECTION_OUTLINE : undefined,
-                outlineOffset: isSelected ? 4 : undefined,
-                zIndex: 10,
+                ...sharedStyle,
+                width: `${model.widthPercent}%`,
+                height: `${model.heightPercent}%`,
+                backgroundColor: model.fill,
+                borderRadius: model.borderRadius,
+                border: model.border,
               }}
-            >
-              {layer.text}
-            </div>
+            />
           );
         })}
     </div>

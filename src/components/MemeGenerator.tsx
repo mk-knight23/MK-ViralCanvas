@@ -40,6 +40,7 @@ import {
 import { findLayer } from '@/utils/layers';
 import { isTextLayer } from '@/types/project';
 import { isEditableTarget } from '@/utils/keyboard';
+import { html2canvasRasterizer } from '@/renderer/html2canvasRasterizer';
 import {
   getLastProjectId,
   incrementExportCount,
@@ -115,7 +116,6 @@ const QUICK_COLORS = [
 ];
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
-const EXPORT_PAINT_DELAY_MS = 60;
 const SEARCH_ERROR_MESSAGE = 'Search unavailable — try again';
 
 const MIME_BY_FORMAT: Record<ExportFormat, string> = {
@@ -335,11 +335,10 @@ export function MemeGenerator() {
     if (!el || el.clientWidth === 0) return null;
     setIsExporting(true);
     try {
-      // Loaded on demand: html2canvas (~49kB gzip) stays out of the
-      // startup bundle and is only fetched on the first export/copy.
-      const { default: html2canvas } = await import('html2canvas');
-      await new Promise(resolve => setTimeout(resolve, EXPORT_PAINT_DELAY_MS));
-      return await html2canvas(el, { useCORS: true, scale, backgroundColor: '#000000' });
+      // The rasterizer captures the same painted DOM the preview renders
+      // (shared layer-render models), keeping export and preview in sync.
+      // Its html2canvas backend stays lazily loaded on first export/copy.
+      return await html2canvasRasterizer.rasterize(el, { scale });
     } finally {
       setIsExporting(false);
     }
