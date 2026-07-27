@@ -41,9 +41,7 @@ export function buildLayerRenderModel(layer: Layer, scale: number): LayerRenderM
         fontWeight: layer.fontWeight,
         color: layer.color,
         webkitTextStroke:
-          layer.strokeWidth > 0
-            ? `${layer.strokeWidth * scale}px ${layer.strokeColor}`
-            : undefined,
+          layer.strokeWidth > 0 ? `${layer.strokeWidth * scale}px ${layer.strokeColor}` : undefined,
         textShadow: layer.shadowEnabled ? MEME_TEXT_SHADOW : undefined,
       };
     }

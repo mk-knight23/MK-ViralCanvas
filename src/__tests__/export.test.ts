@@ -1,19 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
-import {
-  canvasToBlob,
-  exportFileName,
-  exportStage,
-  extensionForBlobType,
-} from '@/utils/export';
+import { canvasToBlob, exportFileName, exportStage, extensionForBlobType } from '@/utils/export';
 import type { StageRasterizer } from '@/renderer/types';
 
 function fakeCanvas(producedType: string | null): {
   canvas: HTMLCanvasElement;
   toBlob: ReturnType<typeof vi.fn>;
 } {
-  const toBlob = vi.fn(
-    (callback: (blob: Blob | null) => void) =>
-      callback(producedType === null ? null : new Blob(['x'], { type: producedType }))
+  const toBlob = vi.fn((callback: (blob: Blob | null) => void) =>
+    callback(producedType === null ? null : new Blob(['x'], { type: producedType }))
   );
   return { canvas: { toBlob } as unknown as HTMLCanvasElement, toBlob };
 }

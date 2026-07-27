@@ -83,7 +83,11 @@ export function LayersPanel() {
                   className={ICON_BUTTON_CLASS}
                   aria-label={layer.hidden ? 'Show layer' : 'Hide layer'}
                 >
-                  {layer.hidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {layer.hidden ? (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5" />
+                  )}
                 </button>
                 <button
                   onClick={() => updateLayer(layer.id, { locked: !layer.locked })}

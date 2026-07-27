@@ -40,7 +40,11 @@ export function updateLayer(layers: readonly Layer[], id: string, updates: Layer
  * Moves a layer one step towards the start ('up') or the end ('down') of the list.
  * No-op (returns a copy) when the layer is missing or already at the boundary.
  */
-export function moveLayer(layers: readonly Layer[], id: string, direction: LayerDirection): Layer[] {
+export function moveLayer(
+  layers: readonly Layer[],
+  id: string,
+  direction: LayerDirection
+): Layer[] {
   const index = layers.findIndex(layer => layer.id === id);
   const target = direction === 'up' ? index - 1 : index + 1;
   if (index === -1 || target < 0 || target >= layers.length) return [...layers];
