@@ -1,19 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronDown,
-  Globe,
-  Heart,
-  ImageIcon,
-  Palette,
-  RefreshCw,
-  Redo2,
-  Share2,
-  Trash2,
-  Type,
-  Undo2,
-  Upload,
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Globe, Heart, Palette, RefreshCw, Redo2, Type, Undo2, Upload } from 'lucide-react';
 import { useMemeStore } from '@/stores/memeStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useStatsStore } from '@/stores/stats';
@@ -27,41 +14,18 @@ import { useUndoRedoShortcuts } from '@/hooks/useUndoRedoShortcuts';
 import { getLastProjectId, loadProject, setLastProjectId } from '@/utils/projectStorage';
 import type { MemeTemplate } from '@/types/meme';
 import type { ExportOptions } from '@/types/project';
+import type { LayerUpdates } from '@/utils/layers';
 import type { SearchMeme } from '@/utils/api';
 import { TemplateBrowser } from './browse/TemplateBrowser';
 import { ArtboardPicker } from './editor/ArtboardPicker';
 import { CanvasStage } from './editor/CanvasStage';
 import { DashboardStrip } from './editor/DashboardStrip';
 import { ExportControls } from './editor/ExportControls';
+import { FavoritesGallery } from './editor/FavoritesGallery';
 import { LayersPanel } from './editor/LayersPanel';
+import { LayerStylePanel } from './editor/LayerStylePanel';
 import { ProjectsMenu } from './editor/ProjectsMenu';
-
-const FONT_OPTIONS = [
-  { value: "'Impact', 'Arial Black', sans-serif", label: 'Impact' },
-  { value: "'Comic Sans MS', cursive", label: 'Comic Sans' },
-  { value: "'Arial', sans-serif", label: 'Arial' },
-  { value: "'Georgia', serif", label: 'Georgia' },
-  { value: "'Courier New', monospace", label: 'Courier' },
-  { value: "'Trebuchet MS', sans-serif", label: 'Trebuchet' },
-];
-
-const WEIGHT_OPTIONS = [
-  { value: 400, label: 'Regular' },
-  { value: 600, label: 'Semibold' },
-  { value: 700, label: 'Bold' },
-  { value: 900, label: 'Black' },
-];
-
-const QUICK_COLORS = [
-  '#ffffff',
-  '#000000',
-  '#ff0000',
-  '#00ff00',
-  '#0000ff',
-  '#ffff00',
-  '#ff6b00',
-  '#ff00ff',
-];
+import { ShareMenu } from './editor/ShareMenu';
 
 export function MemeGenerator() {
   const { templates, setTemplates, addFavorite, favorites, removeFavorite } = useMemeStore();
@@ -86,9 +50,7 @@ export function MemeGenerator() {
   const selectedLayer = foundLayer && isTextLayer(foundLayer) ? foundLayer : undefined;
 
   const [loading, setLoading] = useState(true);
-  const [showFavorites, setShowFavorites] = useState(true);
   const [activeTab, setActiveTab] = useState<'customize' | 'browse'>('customize');
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'png',
     quality: 0.92,
@@ -218,14 +180,11 @@ export function MemeGenerator() {
     addToast(`Opened "${loaded.name}"`, 'success');
   };
 
-  const updateSelected = (updates: Parameters<typeof updateLayer>[1]) => {
-    if (selectedLayer && !selectedLayer.locked) {
+  const updateSelectedLayer = (updates: LayerUpdates) => {
+    if (selectedLayer) {
       updateLayer(selectedLayer.id, updates);
     }
   };
-
-  const shareUrl = encodeURIComponent(window.location.href);
-  const shareText = encodeURIComponent('Check out this meme I made on MK ViralCanvas!');
 
   if (loading) {
     return (
@@ -235,8 +194,6 @@ export function MemeGenerator() {
       </div>
     );
   }
-
-  const propertiesDisabled = !selectedLayer || selectedLayer.locked;
 
   return (
     <div className="space-y-4">
@@ -304,217 +261,7 @@ export function MemeGenerator() {
 
               <LayersPanel />
 
-              {/* Selected-layer properties */}
-              <div className={`space-y-3 ${propertiesDisabled ? 'opacity-60' : ''}`}>
-                <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block">
-                  Layer Style {selectedLayer?.locked ? '(locked)' : ''}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] text-text-muted">Font</span>
-                    <select
-                      value={selectedLayer?.fontFamily ?? FONT_OPTIONS[0].value}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ fontFamily: e.target.value })}
-                      aria-label="Font family"
-                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      {FONT_OPTIONS.map(f => (
-                        <option key={f.value} value={f.value}>
-                          {f.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-text-muted">Weight</span>
-                    <select
-                      value={selectedLayer?.fontWeight ?? 900}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ fontWeight: Number(e.target.value) })}
-                      aria-label="Font weight"
-                      className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      {WEIGHT_OPTIONS.map(w => (
-                        <option key={w.value} value={w.value}>
-                          {w.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] text-text-muted">
-                      Size: {selectedLayer?.fontSize ?? 0}px
-                    </span>
-                    <input
-                      type="range"
-                      min="16"
-                      max="300"
-                      value={selectedLayer?.fontSize ?? 80}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ fontSize: parseInt(e.target.value) })}
-                      aria-label="Font size"
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-text-muted">
-                      Rotation: {selectedLayer?.rotation ?? 0}°
-                    </span>
-                    <input
-                      type="range"
-                      min="-45"
-                      max="45"
-                      value={selectedLayer?.rotation ?? 0}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ rotation: parseInt(e.target.value) })}
-                      aria-label="Text rotation"
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-[10px] text-text-muted block mb-1">Text Color</span>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {QUICK_COLORS.map(c => (
-                      <button
-                        key={c}
-                        disabled={propertiesDisabled}
-                        onClick={() => updateSelected({ color: c })}
-                        className={`w-6 h-6 rounded-full border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
-                          selectedLayer?.color === c
-                            ? 'border-brand-primary scale-110'
-                            : 'border-border hover:scale-105'
-                        }`}
-                        style={{ backgroundColor: c }}
-                        aria-label={`Color ${c}`}
-                      />
-                    ))}
-                    <input
-                      type="color"
-                      value={selectedLayer?.color ?? '#ffffff'}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ color: e.target.value })}
-                      className="w-6 h-6 rounded-full cursor-pointer border-0 bg-transparent disabled:cursor-not-allowed"
-                      aria-label="Custom text color"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] text-text-muted">Stroke Color</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={selectedLayer?.strokeColor ?? '#000000'}
-                        disabled={propertiesDisabled}
-                        onChange={e => updateSelected({ strokeColor: e.target.value })}
-                        className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent disabled:cursor-not-allowed"
-                        aria-label="Stroke color"
-                      />
-                      <span className="text-xs text-text-muted">
-                        {selectedLayer?.strokeColor ?? '—'}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-text-muted">
-                      Stroke: {selectedLayer?.strokeWidth ?? 0}px
-                    </span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="20"
-                      value={selectedLayer?.strokeWidth ?? 0}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ strokeWidth: parseInt(e.target.value) })}
-                      aria-label="Stroke width"
-                      className="w-full mt-2"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] text-text-muted">
-                      Opacity: {Math.round((selectedLayer?.opacity ?? 1) * 100)}%
-                    </span>
-                    <input
-                      type="range"
-                      min="0.05"
-                      max="1"
-                      step="0.05"
-                      value={selectedLayer?.opacity ?? 1}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ opacity: Number(e.target.value) })}
-                      aria-label="Text opacity"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex items-end justify-between pb-1">
-                    <span className="text-[10px] text-text-muted">Shadow</span>
-                    <button
-                      onClick={() =>
-                        updateSelected({ shadowEnabled: !selectedLayer?.shadowEnabled })
-                      }
-                      disabled={propertiesDisabled}
-                      className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed ${
-                        selectedLayer?.shadowEnabled ? 'bg-brand-primary' : 'bg-border'
-                      }`}
-                      role="switch"
-                      aria-checked={selectedLayer?.shadowEnabled ?? false}
-                      aria-label="Toggle text shadow"
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
-                          selectedLayer?.shadowEnabled ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] text-text-muted">
-                      X: {Math.round(selectedLayer?.x ?? 50)}%
-                    </span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={selectedLayer?.x ?? 50}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ x: parseInt(e.target.value) })}
-                      aria-label="Horizontal position"
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-text-muted">
-                      Y: {Math.round(selectedLayer?.y ?? 50)}%
-                    </span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={selectedLayer?.y ?? 50}
-                      disabled={propertiesDisabled}
-                      onChange={e => updateSelected({ y: parseInt(e.target.value) })}
-                      aria-label="Vertical position"
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-                <p className="text-[10px] text-text-muted">
-                  Tip: drag text directly on the canvas to reposition it.
-                </p>
-              </div>
+              <LayerStylePanel layer={selectedLayer} onUpdate={updateSelectedLayer} />
 
               <ArtboardPicker />
 
@@ -541,53 +288,7 @@ export function MemeGenerator() {
                 isExporting={isExporting}
               />
 
-              <div className="relative">
-                <button
-                  onClick={() => setShowShareMenu(!showShareMenu)}
-                  className="w-full bg-surface-secondary border border-border hover:border-brand-primary/30 text-text-secondary p-3 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer text-sm font-semibold"
-                >
-                  <Share2 className="w-4 h-4" /> Share
-                </button>
-                <AnimatePresence>
-                  {showShareMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="absolute bottom-full left-0 right-0 mb-2 card-elevated p-2 space-y-1 z-20"
-                    >
-                      {[
-                        {
-                          name: 'Twitter/X',
-                          url: `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`,
-                        },
-                        {
-                          name: 'Facebook',
-                          url: `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
-                        },
-                        {
-                          name: 'Reddit',
-                          url: `https://www.reddit.com/submit?url=${shareUrl}&title=${shareText}`,
-                        },
-                        {
-                          name: 'WhatsApp',
-                          url: `https://wa.me/?text=${shareText}%20${shareUrl}`,
-                        },
-                      ].map(s => (
-                        <a
-                          key={s.name}
-                          href={s.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block px-3 py-2 text-xs font-medium rounded-lg hover:bg-surface-secondary transition-colors cursor-pointer"
-                        >
-                          {s.name}
-                        </a>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <ShareMenu />
 
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -635,87 +336,16 @@ export function MemeGenerator() {
             <CanvasStage stageRef={stageRef} hideChrome={isExporting} />
           </div>
 
-          {/* Favorites */}
-          {favorites.length > 0 && (
-            <div className="w-full space-y-3">
-              <button
-                onClick={() => setShowFavorites(!showFavorites)}
-                className="flex items-center gap-2 cursor-pointer group"
-              >
-                <Heart className="w-5 h-5 text-pink-500 fill-current" />
-                <h3 className="font-display font-bold text-lg">My Favorites</h3>
-                <span className="text-xs text-text-muted bg-surface-secondary px-2 py-1 rounded-md">
-                  {favorites.length}
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-text-muted transition-transform ${showFavorites ? 'rotate-180' : ''}`}
-                />
-              </button>
-              <AnimatePresence>
-                {showFavorites && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {favorites.map(f => (
-                        <motion.div
-                          key={f.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="group relative card-elevated p-2 cursor-pointer"
-                        >
-                          <img
-                            src={f.image}
-                            alt="Favorite meme"
-                            className="w-full aspect-square object-cover rounded-xl"
-                            loading="lazy"
-                          />
-                          {(f.topText || f.bottomText) && (
-                            <div className="mt-1.5 px-1">
-                              <p className="text-[10px] text-text-muted truncate">
-                                {f.topText || f.bottomText}
-                              </p>
-                            </div>
-                          )}
-                          <div className="absolute inset-2 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => {
-                                selectMeme({
-                                  id: f.id,
-                                  name: 'Favorite',
-                                  url: f.image,
-                                  width: 500,
-                                  height: 500,
-                                });
-                              }}
-                              className="bg-white/20 hover:bg-brand-primary/80 p-2 rounded-full text-white transition-colors cursor-pointer"
-                              aria-label="Use this meme"
-                            >
-                              <ImageIcon className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                removeFavorite(f.id);
-                                addToast('Removed from favorites', 'info');
-                              }}
-                              className="bg-white/20 hover:bg-red-500/80 p-2 rounded-full text-white transition-colors cursor-pointer"
-                              aria-label="Remove favorite"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+          <FavoritesGallery
+            favorites={favorites}
+            onUse={f =>
+              selectMeme({ id: f.id, name: 'Favorite', url: f.image, width: 500, height: 500 })
+            }
+            onRemove={id => {
+              removeFavorite(id);
+              addToast('Removed from favorites', 'info');
+            }}
+          />
         </div>
       </div>
     </div>
