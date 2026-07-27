@@ -32,7 +32,8 @@ export function ShareMenu() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full bg-surface-secondary border border-border hover:border-brand-primary/30 text-text-secondary p-3 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer text-sm font-semibold"
+        className="w-full bg-surface-elevated border border-border hover:border-border-strong text-text-primary p-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-sm font-semibold"
+        aria-expanded={open}
       >
         <Share2 className="w-4 h-4" /> Share
       </button>

@@ -22,8 +22,8 @@ export function FavoritesGallery({ favorites, onUse, onRemove }: FavoritesGaller
         onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-2 cursor-pointer group"
       >
-        <Heart className="w-5 h-5 text-pink-500 fill-current" />
-        <h3 className="font-display font-bold text-lg">My Favorites</h3>
+        <Heart className="w-5 h-5 text-brand-primary fill-current" />
+        <h3 className="font-display font-semibold text-lg">My Favorites</h3>
         <span className="text-xs text-text-muted bg-surface-secondary px-2 py-1 rounded-md">
           {favorites.length}
         </span>
@@ -71,7 +71,7 @@ export function FavoritesGallery({ favorites, onUse, onRemove }: FavoritesGaller
                     </button>
                     <button
                       onClick={() => onRemove(f.id)}
-                      className="bg-white/20 hover:bg-red-500/80 p-2 rounded-full text-white transition-colors cursor-pointer"
+                      className="bg-white/20 hover:bg-danger/80 p-2 rounded-full text-white transition-colors cursor-pointer"
                       aria-label="Remove favorite"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -181,19 +181,19 @@ export function ProjectsMenu({ onProjectsChanged }: ProjectsMenuProps) {
         type="text"
         value={project.name}
         onChange={e => renameProject(e.target.value)}
-        className="flex-1 min-w-[140px] bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none transition-all"
+        className="flex-1 min-w-[140px] bg-surface-secondary border border-border rounded-xl px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none transition-colors"
         aria-label="Project name"
         placeholder="Project name"
       />
       <button
         onClick={handleSave}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-secondary border border-border text-text-secondary hover:border-brand-primary/30 text-xs font-semibold transition-all cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-elevated border border-border text-text-secondary hover:text-text-primary hover:border-border-strong text-xs font-semibold transition-colors cursor-pointer"
       >
         <Save className="w-3.5 h-3.5" /> Save
       </button>
       <button
         onClick={handleNew}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-secondary border border-border text-text-secondary hover:border-brand-primary/30 text-xs font-semibold transition-all cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-elevated border border-border text-text-secondary hover:text-text-primary hover:border-border-strong text-xs font-semibold transition-colors cursor-pointer"
       >
         <Plus className="w-3.5 h-3.5" /> New
       </button>
@@ -202,20 +202,20 @@ export function ProjectsMenu({ onProjectsChanged }: ProjectsMenuProps) {
           refreshList();
           setIsOpen(open => !open);
         }}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-secondary border border-border text-text-secondary hover:border-brand-primary/30 text-xs font-semibold transition-all cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-elevated border border-border text-text-secondary hover:text-text-primary hover:border-border-strong text-xs font-semibold transition-colors cursor-pointer"
         aria-expanded={isOpen}
       >
         <FolderOpen className="w-3.5 h-3.5" /> Open
       </button>
       <button
         onClick={handleExportJson}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-secondary border border-border text-text-secondary hover:border-brand-primary/30 text-xs font-semibold transition-all cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-elevated border border-border text-text-secondary hover:text-text-primary hover:border-border-strong text-xs font-semibold transition-colors cursor-pointer"
       >
         <FileDown className="w-3.5 h-3.5" /> Export JSON
       </button>
       <button
         onClick={() => importInputRef.current?.click()}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-secondary border border-border text-text-secondary hover:border-brand-primary/30 text-xs font-semibold transition-all cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-elevated border border-border text-text-secondary hover:text-text-primary hover:border-border-strong text-xs font-semibold transition-colors cursor-pointer"
       >
         <FileUp className="w-3.5 h-3.5" /> Import
       </button>
@@ -298,7 +298,7 @@ export function ProjectsMenu({ onProjectsChanged }: ProjectsMenuProps) {
                     </button>
                     <button
                       onClick={() => handleDelete(meta.id)}
-                      className="p-1.5 rounded-md text-text-muted hover:text-red-500 cursor-pointer"
+                      className="p-1.5 rounded-md text-text-muted hover:text-danger cursor-pointer"
                       aria-label={`Delete ${meta.name}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />

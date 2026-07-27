@@ -220,6 +220,7 @@
   --color-success: var(--mk-success);
   --color-danger: var(--mk-danger);
   --color-info: var(--mk-info);
+  --color-ring: var(--mk-ring);
 
   /* Family radius scale: 4 / 8 / 12 / 16 / 24 */
   --radius-sm: var(--mk-radius-xs);

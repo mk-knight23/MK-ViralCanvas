@@ -129,10 +129,10 @@ export function TemplateBrowser({ templates, selectedTemplateId, onSelect }: Tem
                 clearSearchTerm();
                 handleCategoryChange(cat.id);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                 activeCategory === cat.id
-                  ? 'bg-brand-cta text-white'
-                  : 'bg-surface-secondary text-text-muted hover:text-text-secondary hover:bg-border'
+                  ? 'bg-brand-cta text-accent-contrast'
+                  : 'bg-surface-secondary text-text-muted hover:text-text-secondary hover:bg-surface-elevated'
               }`}
             >
               <Icon className="w-3 h-3" /> {cat.name}
@@ -147,10 +147,10 @@ export function TemplateBrowser({ templates, selectedTemplateId, onSelect }: Tem
         </div>
       ) : searchError ? (
         <div role="alert" className="text-center py-12 space-y-3">
-          <p className="text-sm font-medium text-red-500">{searchError}</p>
+          <p className="text-sm font-medium text-danger">{searchError}</p>
           <button
             onClick={retry}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-cta text-white text-sm font-semibold hover:brightness-90 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-cta text-accent-contrast text-sm font-semibold border border-transparent hover:border-ring transition-colors cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" /> Retry
           </button>
@@ -161,10 +161,10 @@ export function TemplateBrowser({ templates, selectedTemplateId, onSelect }: Tem
             <button
               key={m.id}
               onClick={() => onSelect(m)}
-              className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer group ${
+              className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-colors cursor-pointer group ${
                 selectedTemplateId === m.id
-                  ? 'border-brand-primary ring-2 ring-brand-primary/20'
-                  : 'border-transparent hover:border-border-hover'
+                  ? 'border-brand-primary'
+                  : 'border-transparent hover:border-border-strong'
               }`}
             >
               <img
