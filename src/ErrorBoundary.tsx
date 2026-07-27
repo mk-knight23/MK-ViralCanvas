@@ -23,15 +23,15 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div
-          className="min-h-screen bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 flex items-center justify-center p-8"
+          className="min-h-screen bg-surface flex items-center justify-center p-8"
           role="alert"
           aria-live="assertive"
         >
-          <div className="max-w-2xl w-full bg-white dark:bg-slate-800 border-2 border-brand-primary/20 p-12 rounded-[2rem] shadow-2xl">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-brand-primary/10 p-4 rounded-2xl">
+          <div className="max-w-2xl w-full card-elevated p-10 rounded-2xl">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="bg-accent-soft p-4 rounded-xl">
                 <svg
-                  className="w-12 h-12 text-brand-primary"
+                  className="w-10 h-10 text-brand-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -44,29 +44,27 @@ export class ErrorBoundary extends Component<Props, State> {
                   />
                 </svg>
               </div>
-              <h1 className="text-4xl font-display font-black text-slate-900 dark:text-white">
-                Meme <span className="text-brand-primary">Crash!</span>
-              </h1>
+              <h1 className="text-3xl font-display font-bold text-text-primary">Something broke</h1>
             </div>
-            <p className="text-slate-600 dark:text-slate-400 font-medium mb-8 leading-relaxed">
-              Something went wrong while creating your meme. Don't worry, your creative genius isn't
-              lost!
+            <p className="text-text-secondary font-medium mb-6 leading-relaxed">
+              The editor hit an unexpected error. Your saved projects are safe in this browser —
+              reload to pick up where you left off.
             </p>
             {this.state.error && (
-              <details className="mb-8">
-                <summary className="text-xs font-black uppercase tracking-widest cursor-pointer hover:text-brand-primary transition-colors text-slate-500">
+              <details className="mb-6">
+                <summary className="text-xs font-semibold uppercase tracking-wider cursor-pointer text-text-muted hover:text-text-primary transition-colors">
                   Technical Details
                 </summary>
-                <pre className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 text-xs overflow-auto font-mono rounded-xl text-slate-600 dark:text-slate-400">
+                <pre className="mt-3 p-4 bg-surface-secondary border border-border text-xs overflow-auto font-mono rounded-xl text-text-secondary">
                   {this.state.error.toString()}
                 </pre>
               </details>
             )}
             <button
               onClick={() => window.location.reload()}
-              className="w-full px-8 py-4 bg-brand-cta hover:brightness-90 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all active:scale-95 shadow-lg shadow-brand-primary/30"
+              className="w-full px-8 py-3.5 bg-brand-cta text-accent-contrast rounded-xl font-semibold text-sm border border-transparent hover:border-ring transition-colors cursor-pointer"
             >
-              Try Again
+              Reload the editor
             </button>
           </div>
         </div>
