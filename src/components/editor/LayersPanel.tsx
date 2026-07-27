@@ -11,7 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
-import { MAX_LAYERS } from '@/types/project';
+import { MAX_LAYERS, isTextLayer } from '@/types/project';
 
 function layerPlaceholder(index: number, total: number): string {
   if (index === 0) return 'Enter top text...';
@@ -61,23 +61,33 @@ export function LayersPanel() {
                   : 'border-border bg-surface-secondary hover:border-border-hover'
               }`}
             >
-              <input
-                type="text"
-                value={layer.text}
-                disabled={layer.locked}
-                placeholder={layerPlaceholder(index, layers.length)}
-                onFocus={() => selectLayer(layer.id)}
-                onChange={e => updateLayer(layer.id, { text: e.target.value })}
-                className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none transition-all disabled:opacity-50"
-                aria-label={`Layer ${index + 1} text`}
-              />
+              {isTextLayer(layer) ? (
+                <input
+                  type="text"
+                  value={layer.text}
+                  disabled={layer.locked}
+                  placeholder={layerPlaceholder(index, layers.length)}
+                  onFocus={() => selectLayer(layer.id)}
+                  onChange={e => updateLayer(layer.id, { text: e.target.value })}
+                  className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none transition-all disabled:opacity-50"
+                  aria-label={`Layer ${index + 1} text`}
+                />
+              ) : (
+                <span className="block w-full px-3 py-2 text-sm text-text-muted capitalize">
+                  {layer.type} layer
+                </span>
+              )}
               <div className="flex items-center gap-0.5">
                 <button
                   onClick={() => updateLayer(layer.id, { hidden: !layer.hidden })}
                   className={ICON_BUTTON_CLASS}
                   aria-label={layer.hidden ? 'Show layer' : 'Hide layer'}
                 >
-                  {layer.hidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {layer.hidden ? (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5" />
+                  )}
                 </button>
                 <button
                   onClick={() => updateLayer(layer.id, { locked: !layer.locked })}

@@ -1,15 +1,35 @@
 import type { MemeTemplate } from './meme';
 
-export const PROJECT_SCHEMA_VERSION = 1;
+/**
+ * Schema history:
+ * - v1: layers were text-only objects without a `type` discriminant.
+ * - v2: layers are a discriminated union (text | image | shape). v1 layers
+ *   migrate losslessly inside validateProject by stamping `type: 'text'`.
+ */
+export const PROJECT_SCHEMA_VERSION = 2;
 
-/** A single positioned text layer on the artboard. */
-export interface TextLayer {
+export type LayerType = 'text' | 'image' | 'shape';
+
+/** Fields shared by every layer variant. */
+export interface LayerBase {
   id: string;
-  text: string;
+  type: LayerType;
   /** Horizontal center position as a percentage of artboard width (0-100). */
   x: number;
   /** Vertical center position as a percentage of artboard height (0-100). */
   y: number;
+  /** 0 (transparent) to 1 (opaque). */
+  opacity: number;
+  /** Rotation in degrees. */
+  rotation: number;
+  hidden: boolean;
+  locked: boolean;
+}
+
+/** A single positioned text layer on the artboard. */
+export interface TextLayer extends LayerBase {
+  type: 'text';
+  text: string;
   fontFamily: string;
   /** Font size in artboard pixels (rendered scaled in preview, true size on export). */
   fontSize: number;
@@ -19,12 +39,47 @@ export interface TextLayer {
   /** Stroke width in artboard pixels. */
   strokeWidth: number;
   shadowEnabled: boolean;
-  /** 0 (transparent) to 1 (opaque). */
-  opacity: number;
-  /** Rotation in degrees. */
-  rotation: number;
-  hidden: boolean;
-  locked: boolean;
+}
+
+/** An image placed on the artboard (sticker/overlay). */
+export interface ImageLayer extends LayerBase {
+  type: 'image';
+  /** Image source; must satisfy isSafeImageUrl when imported. */
+  url: string;
+  /** Rendered width as a percentage of artboard width (1-100). */
+  width: number;
+  /** Rendered height as a percentage of artboard height (1-100). */
+  height: number;
+}
+
+export type ShapeKind = 'rectangle' | 'ellipse';
+
+/** A vector shape drawn on the artboard. */
+export interface ShapeLayer extends LayerBase {
+  type: 'shape';
+  shape: ShapeKind;
+  /** Width as a percentage of artboard width (1-100). */
+  width: number;
+  /** Height as a percentage of artboard height (1-100). */
+  height: number;
+  fill: string;
+  strokeColor: string;
+  /** Stroke width in artboard pixels. */
+  strokeWidth: number;
+}
+
+export type Layer = TextLayer | ImageLayer | ShapeLayer;
+
+export function isTextLayer(layer: Layer): layer is TextLayer {
+  return layer.type === 'text';
+}
+
+export function isImageLayer(layer: Layer): layer is ImageLayer {
+  return layer.type === 'image';
+}
+
+export function isShapeLayer(layer: Layer): layer is ShapeLayer {
+  return layer.type === 'shape';
 }
 
 export interface Artboard {
@@ -41,7 +96,7 @@ export interface Project {
   updatedAt: string;
   artboard: Artboard;
   template: MemeTemplate | null;
-  layers: TextLayer[];
+  layers: Layer[];
 }
 
 /** Lightweight listing entry for the recent-projects UI. */
@@ -91,9 +146,10 @@ export function generateId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createTextLayer(overrides: Partial<TextLayer> = {}): TextLayer {
+export function createTextLayer(overrides: Partial<Omit<TextLayer, 'type'>> = {}): TextLayer {
   return {
     id: generateId('layer'),
+    type: 'text',
     text: '',
     x: 50,
     y: 50,
@@ -104,6 +160,44 @@ export function createTextLayer(overrides: Partial<TextLayer> = {}): TextLayer {
     strokeColor: '#000000',
     strokeWidth: 4,
     shadowEnabled: true,
+    opacity: 1,
+    rotation: 0,
+    hidden: false,
+    locked: false,
+    ...overrides,
+  };
+}
+
+export function createImageLayer(
+  overrides: Partial<Omit<ImageLayer, 'type'>> & Pick<ImageLayer, 'url'>
+): ImageLayer {
+  return {
+    id: generateId('layer'),
+    type: 'image',
+    x: 50,
+    y: 50,
+    width: 40,
+    height: 40,
+    opacity: 1,
+    rotation: 0,
+    hidden: false,
+    locked: false,
+    ...overrides,
+  };
+}
+
+export function createShapeLayer(overrides: Partial<Omit<ShapeLayer, 'type'>> = {}): ShapeLayer {
+  return {
+    id: generateId('layer'),
+    type: 'shape',
+    shape: 'rectangle',
+    x: 50,
+    y: 50,
+    width: 40,
+    height: 20,
+    fill: '#ffffff',
+    strokeColor: '#000000',
+    strokeWidth: 0,
     opacity: 1,
     rotation: 0,
     hidden: false,

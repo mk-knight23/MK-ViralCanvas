@@ -1,8 +1,4 @@
-export const STORAGE_KEYS = {
-  SETTINGS: 'memelab-settings',
-  STATS: 'memelab-stats',
-  FAVORITES: 'memelab-favorites',
-} as const;
+// Storage keys live in src/utils/storageKeys.ts (mk.viralcanvas.*.v1).
 
 // Only shortcuts that are actually wired up are advertised here. Undo/redo
 // are handled in MemeGenerator; Escape closes the Settings dialog. Browser

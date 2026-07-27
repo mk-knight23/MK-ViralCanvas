@@ -1,0 +1,76 @@
+{
+  "kind": "viralcanvas-project",
+  "version": 1,
+  "project": {
+    "schemaVersion": 1,
+    "id": "proj-v1-fixture",
+    "name": "V1 fixture project",
+    "createdAt": "2026-07-20T10:00:00.000Z",
+    "updatedAt": "2026-07-21T11:30:00.000Z",
+    "artboard": {
+      "presetId": "yt-thumb",
+      "width": 1280,
+      "height": 720
+    },
+    "template": {
+      "id": "tmpl-drake",
+      "name": "Drake Hotline Bling",
+      "url": "https://i.imgflip.com/30b1gx.jpg",
+      "width": 1200,
+      "height": 1200
+    },
+    "layers": [
+      {
+        "id": "layer-top",
+        "text": "TOP TEXT",
+        "x": 50,
+        "y": 8,
+        "fontFamily": "'Impact', 'Arial Black', sans-serif",
+        "fontSize": 80,
+        "fontWeight": 900,
+        "color": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 4,
+        "shadowEnabled": true,
+        "opacity": 0.85,
+        "rotation": -12,
+        "hidden": false,
+        "locked": false
+      },
+      {
+        "id": "layer-bottom",
+        "text": "BOTTOM TEXT",
+        "x": 50,
+        "y": 92,
+        "fontFamily": "'Comic Sans MS', cursive",
+        "fontSize": 64,
+        "fontWeight": 700,
+        "color": "#ffff00",
+        "strokeColor": "#111111",
+        "strokeWidth": 6,
+        "shadowEnabled": false,
+        "opacity": 1,
+        "rotation": 0,
+        "hidden": false,
+        "locked": true
+      },
+      {
+        "id": "layer-hidden",
+        "text": "WATERMARK",
+        "x": 80,
+        "y": 50,
+        "fontFamily": "'Impact', 'Arial Black', sans-serif",
+        "fontSize": 80,
+        "fontWeight": 900,
+        "color": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 4,
+        "shadowEnabled": true,
+        "opacity": 1,
+        "rotation": 0,
+        "hidden": true,
+        "locked": false
+      }
+    ]
+  }
+}

@@ -1,3 +1,7 @@
+// MUST stay the first import: persisted zustand stores hydrate from
+// localStorage the moment their modules are evaluated, so the legacy-key
+// migration has to run before anything else is imported.
+import './bootstrapStorage';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

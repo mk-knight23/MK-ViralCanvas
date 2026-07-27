@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { MemeTemplate, FavoriteMeme } from '@/types/meme';
+import { MEMES_STORE_KEY } from '@/utils/storageKeys';
 
 interface MemeStore {
   templates: MemeTemplate[];
@@ -28,7 +29,7 @@ export const useMemeStore = create<MemeStore>()(
         })),
     }),
     {
-      name: 'memelab-storage',
+      name: MEMES_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
     }
   )

@@ -104,7 +104,7 @@ describe('import validation', () => {
       const layer = result.project.layers[0];
       expect(layer.x).toBe(100);
       expect(layer.y).toBe(0);
-      expect(layer.fontSize).toBe(600);
+      expect(layer.type === 'text' && layer.fontSize).toBe(600);
       expect(layer.opacity).toBe(1);
     }
   });
@@ -145,13 +145,13 @@ describe('isSafeImageUrl', () => {
 });
 
 describe('localStorage persistence', () => {
-  it('saves, lists, loads and deletes projects under the viralcanvas prefix', () => {
+  it('saves, lists, loads and deletes projects under the mk.viralcanvas namespace', () => {
     const first = createProject({ id: 'p1', name: 'First' });
     const second = createProject({ id: 'p2', name: 'Second' });
 
     expect(saveProject(first)).toBe(true);
     expect(saveProject(second)).toBe(true);
-    expect(localStorage.getItem('viralcanvas:v1:project:p1')).not.toBeNull();
+    expect(localStorage.getItem('mk.viralcanvas.project.p1.v1')).not.toBeNull();
 
     const metas = listProjects();
     expect(metas).toHaveLength(2);
@@ -167,7 +167,7 @@ describe('localStorage persistence', () => {
   });
 
   it('returns null for corrupted stored data instead of throwing', () => {
-    localStorage.setItem('viralcanvas:v1:project:bad', '{broken');
+    localStorage.setItem('mk.viralcanvas.project.bad.v1', '{broken');
     expect(loadProject('bad')).toBeNull();
     expect(listProjects()).toHaveLength(0);
   });
@@ -176,7 +176,7 @@ describe('localStorage persistence', () => {
     expect(getLastProjectId()).toBeNull();
     setLastProjectId('p9');
     expect(getLastProjectId()).toBe('p9');
-    localStorage.setItem('viralcanvas:v1:last-project-id', 'p1');
+    localStorage.setItem('mk.viralcanvas.last-project-id.v1', 'p1');
     saveProject(createProject({ id: 'p1' }));
     deleteProject('p1');
     expect(getLastProjectId()).toBeNull();
@@ -192,7 +192,7 @@ describe('export counter and storage estimate', () => {
   });
 
   it('recovers from a corrupted counter value', () => {
-    localStorage.setItem('viralcanvas:v1:export-count', 'lots');
+    localStorage.setItem('mk.viralcanvas.export-count.v1', 'lots');
     expect(getExportCount()).toBe(0);
   });
 

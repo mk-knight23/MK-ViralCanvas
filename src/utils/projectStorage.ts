@@ -1,21 +1,37 @@
-import type { Artboard, Project, ProjectMeta, TextLayer } from '@/types/project';
+import type {
+  Artboard,
+  ImageLayer,
+  Layer,
+  Project,
+  ProjectMeta,
+  ShapeLayer,
+  TextLayer,
+} from '@/types/project';
 import {
   CUSTOM_PRESET_ID,
   MAX_ARTBOARD_SIZE,
   MAX_LAYERS,
   MIN_ARTBOARD_SIZE,
   PROJECT_SCHEMA_VERSION,
+  createImageLayer,
   createProject,
+  createShapeLayer,
   createTextLayer,
   generateId,
   getArtboardPreset,
 } from '@/types/project';
 import type { MemeTemplate } from '@/types/meme';
+import {
+  EXPORT_COUNT_KEY,
+  LAST_PROJECT_KEY,
+  LEGACY_MEMELAB_PREFIX,
+  LEGACY_VIRALCANVAS_PREFIX,
+  PROJECT_KEY_PREFIX,
+  STORAGE_NAMESPACE,
+  projectStorageKey,
+} from './storageKeys';
 
-export const STORAGE_PREFIX = 'viralcanvas:v1:';
-const PROJECT_KEY_PREFIX = `${STORAGE_PREFIX}project:`;
-const LAST_PROJECT_KEY = `${STORAGE_PREFIX}last-project-id`;
-const EXPORT_COUNT_KEY = `${STORAGE_PREFIX}export-count`;
+export { projectStorageKey };
 
 const EXPORT_FILE_KIND = 'viralcanvas-project';
 const MAX_TEXT_LENGTH = 500;
@@ -58,15 +74,35 @@ export function isSafeImageUrl(url: unknown): url is string {
   );
 }
 
-function sanitizeLayer(value: unknown): TextLayer | null {
-  if (!isRecord(value)) return null;
+interface SanitizedLayerBase {
+  id: string;
+  x: number;
+  y: number;
+  opacity: number;
+  rotation: number;
+  hidden: boolean;
+  locked: boolean;
+}
+
+function sanitizeLayerBase(value: Record<string, unknown>, defaults: Layer): SanitizedLayerBase {
+  return {
+    id: typeof value.id === 'string' && value.id.length > 0 ? value.id : generateId('layer'),
+    x: clampNumber(value.x, 0, 100, defaults.x),
+    y: clampNumber(value.y, 0, 100, defaults.y),
+    opacity: clampNumber(value.opacity, 0, 1, defaults.opacity),
+    rotation: clampNumber(value.rotation, -360, 360, defaults.rotation),
+    hidden: asBoolean(value.hidden, false),
+    locked: asBoolean(value.locked, false),
+  };
+}
+
+function sanitizeTextLayer(value: Record<string, unknown>): TextLayer | null {
   if (value.text !== undefined && typeof value.text !== 'string') return null;
   const defaults = createTextLayer();
   return {
-    id: typeof value.id === 'string' && value.id.length > 0 ? value.id : generateId('layer'),
+    ...sanitizeLayerBase(value, defaults),
+    type: 'text',
     text: asBoundedString(value.text, '', MAX_TEXT_LENGTH),
-    x: clampNumber(value.x, 0, 100, defaults.x),
-    y: clampNumber(value.y, 0, 100, defaults.y),
     fontFamily: asBoundedString(value.fontFamily, defaults.fontFamily, 200),
     fontSize: clampNumber(value.fontSize, 8, 600, defaults.fontSize),
     fontWeight: clampNumber(value.fontWeight, 100, 1000, defaults.fontWeight),
@@ -74,11 +110,52 @@ function sanitizeLayer(value: unknown): TextLayer | null {
     strokeColor: asBoundedString(value.strokeColor, defaults.strokeColor, 50),
     strokeWidth: clampNumber(value.strokeWidth, 0, 60, defaults.strokeWidth),
     shadowEnabled: asBoolean(value.shadowEnabled, defaults.shadowEnabled),
-    opacity: clampNumber(value.opacity, 0, 1, defaults.opacity),
-    rotation: clampNumber(value.rotation, -360, 360, defaults.rotation),
-    hidden: asBoolean(value.hidden, false),
-    locked: asBoolean(value.locked, false),
   };
+}
+
+function sanitizeImageLayer(value: Record<string, unknown>): ImageLayer | null {
+  if (!isSafeImageUrl(value.url)) return null;
+  const defaults = createImageLayer({ url: value.url });
+  return {
+    ...sanitizeLayerBase(value, defaults),
+    type: 'image',
+    url: value.url,
+    width: clampNumber(value.width, 1, 100, defaults.width),
+    height: clampNumber(value.height, 1, 100, defaults.height),
+  };
+}
+
+const SHAPE_KINDS = new Set<ShapeLayer['shape']>(['rectangle', 'ellipse']);
+
+function sanitizeShapeLayer(value: Record<string, unknown>): ShapeLayer {
+  const defaults = createShapeLayer();
+  const shape = SHAPE_KINDS.has(value.shape as ShapeLayer['shape'])
+    ? (value.shape as ShapeLayer['shape'])
+    : defaults.shape;
+  return {
+    ...sanitizeLayerBase(value, defaults),
+    type: 'shape',
+    shape,
+    width: clampNumber(value.width, 1, 100, defaults.width),
+    height: clampNumber(value.height, 1, 100, defaults.height),
+    fill: asBoundedString(value.fill, defaults.fill, 50),
+    strokeColor: asBoundedString(value.strokeColor, defaults.strokeColor, 50),
+    strokeWidth: clampNumber(value.strokeWidth, 0, 60, defaults.strokeWidth),
+  };
+}
+
+/**
+ * Sanitizes one layer, dispatching on the `type` discriminant.
+ * v1 layers (schemaVersion 1) have no `type` field and migrate to text layers
+ * losslessly — every v1 field is preserved unchanged.
+ */
+function sanitizeLayer(value: unknown): Layer | null {
+  if (!isRecord(value)) return null;
+  const type = value.type === undefined ? 'text' : value.type;
+  if (type === 'text') return sanitizeTextLayer(value);
+  if (type === 'image') return sanitizeImageLayer(value);
+  if (type === 'shape') return sanitizeShapeLayer(value);
+  return null;
 }
 
 function sanitizeTemplate(value: unknown): MemeTemplate | null | 'invalid' {
@@ -120,12 +197,12 @@ export function validateProject(value: unknown): ParseResult {
   if (value.layers.length > MAX_LAYERS) {
     return { ok: false, error: `Projects support at most ${MAX_LAYERS} layers` };
   }
-  const layers: TextLayer[] = [];
+  const layers: Layer[] = [];
   const seenIds = new Set<string>();
   for (const entry of value.layers) {
     const layer = sanitizeLayer(entry);
     if (layer === null) {
-      return { ok: false, error: 'Project contains an invalid text layer' };
+      return { ok: false, error: 'Project contains an invalid layer' };
     }
     if (seenIds.has(layer.id)) {
       layers.push({ ...layer, id: generateId('layer') });
@@ -208,10 +285,6 @@ function safeSetItem(key: string, value: string): boolean {
   }
 }
 
-export function projectStorageKey(id: string): string {
-  return `${PROJECT_KEY_PREFIX}${id}`;
-}
-
 /** Saves the project. Returns false when storage is unavailable or full. */
 export function saveProject(project: Project): boolean {
   const stamped: Project = { ...project, updatedAt: new Date().toISOString() };
@@ -290,7 +363,14 @@ export function estimateStorageBytes(): number {
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = localStorage.key(i);
       if (!key) continue;
-      if (!key.startsWith(STORAGE_PREFIX) && !key.startsWith('memelab-')) continue;
+      // Legacy namespaces still occupy quota until their one-release
+      // grace period ends, so they count toward the estimate too.
+      if (
+        !key.startsWith(STORAGE_NAMESPACE) &&
+        !key.startsWith(LEGACY_VIRALCANVAS_PREFIX) &&
+        !key.startsWith(LEGACY_MEMELAB_PREFIX)
+      )
+        continue;
       const value = safeGetItem(key) ?? '';
       chars += key.length + value.length;
     }

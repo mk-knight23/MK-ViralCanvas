@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { SETTINGS_STORE_KEY } from '@/utils/storageKeys';
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
@@ -57,7 +58,7 @@ export const useSettingsStore = create<SettingsState>()(
       setReducedMotion: value => set({ reducedMotion: value }),
     }),
     {
-      name: 'memelab-settings',
+      name: SETTINGS_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
     }
   )

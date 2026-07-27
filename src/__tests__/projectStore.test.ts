@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useProjectStore } from '@/stores/projectStore';
-import { createProject, createTextLayer } from '@/types/project';
+import { createProject, createTextLayer, isTextLayer, type Project } from '@/types/project';
+
+/** Layer arrays are Layer[] since schema v2; narrow for text-only assertions. */
+function textAt(project: Project, index: number): string {
+  const layer = project.layers[index];
+  if (!layer || !isTextLayer(layer)) throw new Error('expected a text layer');
+  return layer.text;
+}
 
 function resetStore() {
   useProjectStore.getState().setProject(
@@ -44,9 +51,9 @@ describe('projectStore layers', () => {
     useProjectStore.getState().updateLayer('top', { text: 'HELLO', rotation: 15 });
     const after = useProjectStore.getState().project;
 
-    expect(after.layers[0].text).toBe('HELLO');
+    expect(textAt(after, 0)).toBe('HELLO');
     expect(after.layers[0].rotation).toBe(15);
-    expect(before.layers[0].text).toBe('');
+    expect(textAt(before, 0)).toBe('');
     expect(after).not.toBe(before);
   });
 
@@ -71,18 +78,18 @@ describe('projectStore history', () => {
     useProjectStore.getState().updateLayer('top', { text: 'v2' });
     useProjectStore.getState().commit();
 
-    expect(useProjectStore.getState().project.layers[0].text).toBe('v2');
+    expect(textAt(useProjectStore.getState().project, 0)).toBe('v2');
     expect(useProjectStore.getState().canUndo()).toBe(true);
 
     useProjectStore.getState().undo();
-    expect(useProjectStore.getState().project.layers[0].text).toBe('v1');
+    expect(textAt(useProjectStore.getState().project, 0)).toBe('v1');
 
     useProjectStore.getState().undo();
-    expect(useProjectStore.getState().project.layers[0].text).toBe('');
+    expect(textAt(useProjectStore.getState().project, 0)).toBe('');
     expect(useProjectStore.getState().canUndo()).toBe(false);
 
     useProjectStore.getState().redo();
-    expect(useProjectStore.getState().project.layers[0].text).toBe('v1');
+    expect(textAt(useProjectStore.getState().project, 0)).toBe('v1');
     expect(useProjectStore.getState().canRedo()).toBe(true);
   });
 
@@ -96,7 +103,7 @@ describe('projectStore history', () => {
     useProjectStore.getState().commit();
 
     expect(useProjectStore.getState().canRedo()).toBe(false);
-    expect(useProjectStore.getState().project.layers[0].text).toBe('branch');
+    expect(textAt(useProjectStore.getState().project, 0)).toBe('branch');
   });
 
   it('commit is a no-op when nothing changed', () => {

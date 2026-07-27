@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { STATS_STORE_KEY } from '@/utils/storageKeys';
 
 interface StatsState {
   totalMemesCreated: number;
@@ -56,7 +57,7 @@ export const useStatsStore = create<StatsState>()(
         }),
     }),
     {
-      name: 'memelab-stats',
+      name: STATS_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
     }
   )

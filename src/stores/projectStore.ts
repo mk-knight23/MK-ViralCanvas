@@ -9,6 +9,7 @@ import {
   removeLayer as removeLayerOp,
   updateLayer as updateLayerOp,
   type LayerDirection,
+  type LayerUpdates,
 } from '@/utils/layers';
 
 const HISTORY_LIMIT = 50;
@@ -26,9 +27,9 @@ interface ProjectStore {
   setTemplate: (template: MemeTemplate | null) => void;
   setArtboard: (artboard: Artboard) => void;
 
-  addLayer: (overrides?: Partial<TextLayer>) => void;
+  addLayer: (overrides?: Partial<Omit<TextLayer, 'type'>>) => void;
   removeLayer: (id: string) => void;
-  updateLayer: (id: string, updates: Partial<Omit<TextLayer, 'id'>>) => void;
+  updateLayer: (id: string, updates: LayerUpdates) => void;
   moveLayer: (id: string, direction: LayerDirection) => void;
   duplicateLayer: (id: string) => void;
   selectLayer: (id: string | null) => void;
