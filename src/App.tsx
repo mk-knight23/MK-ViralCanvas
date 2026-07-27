@@ -21,7 +21,7 @@ export default function App() {
         <SettingsPanel />
         <ToastContainer />
 
-        <nav className="sticky top-0 z-40 glass mx-0 border-b border-border">
+        <nav className="sticky top-0 z-40 glass-nav mx-0 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-brand-primary p-2 rounded-xl shadow-lg shadow-brand-primary/20">

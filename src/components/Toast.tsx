@@ -10,9 +10,9 @@ const icons = {
 };
 
 const colors = {
-  success: 'text-emerald-500',
-  error: 'text-red-500',
-  info: 'text-brand-primary',
+  success: 'text-success',
+  error: 'text-danger',
+  info: 'text-info',
 };
 
 export function ToastContainer() {
@@ -52,7 +52,7 @@ function ToastItem({
       initial={{ opacity: 0, x: 80, scale: 0.95 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 80, scale: 0.95 }}
-      className="pointer-events-auto glass px-5 py-3.5 flex items-center gap-3 min-w-[280px] max-w-sm shadow-xl"
+      className="pointer-events-auto glass-panel px-5 py-3.5 flex items-center gap-3 min-w-[280px] max-w-sm"
     >
       <Icon className={`w-5 h-5 shrink-0 ${colors[toast.type]}`} />
       <p className="text-sm font-medium flex-1">{toast.message}</p>

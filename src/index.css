@@ -1,137 +1,383 @@
 @import 'tailwindcss';
 
+/* =====================================================================
+   MK ViralCanvas — "Night Studio" (V3)
+
+   Token architecture per V3_DESIGN_SYSTEM.md:
+   - Tier 1/2 `--mk-*` tokens below are the only place raw color values
+     live. The approved Gate B preview (viralcanvas-night-studio.html)
+     is the contract for every value.
+   - Components consume semantics through the Tailwind @theme bridge —
+     never raw hex, never stock Tailwind palette classes.
+   - Themes remap Tier-2 tokens via `data-theme` on <html>; components
+     never branch on theme id.
+   ===================================================================== */
+
+/* ---- MK family primitives (identical across MK products) ---- */
+:root {
+  --mk-radius-xs: 4px;
+  --mk-radius-sm: 8px;
+  --mk-radius-md: 12px;
+  --mk-radius-lg: 16px;
+  --mk-radius-xl: 24px;
+  --mk-radius-full: 9999px;
+
+  --mk-blur-nav: 12px;
+  --mk-blur-panel: 16px;
+  --mk-blur-overlay: 20px;
+
+  --mk-dur-fast: 120ms;
+  --mk-dur-base: 200ms;
+  --mk-ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ---- Signature dark — "Night Studio" (default) ---- */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --mk-bg-page: #0e1116;
+  --mk-bg-raised: #151a21;
+  --mk-bg-sunken: #0a0d11;
+  --mk-canvas-bg: #f4f5f7;
+  --mk-canvas-ink: #14171c;
+  --mk-text-primary: #f2f4f8; /* 17.17:1 on page */
+  --mk-text-secondary: #a9b1bf; /* 8.76:1 on page */
+  --mk-text-muted: #7e8794; /* 5.21:1 on page */
+  --mk-accent: #7c5cff; /* non-text uses: underscore, selection, icons */
+  --mk-accent-strong: #6847f5; /* filled buttons — white text 5.51:1 */
+  --mk-accent-soft: rgba(124, 92, 255, 0.14);
+  --mk-accent-contrast: #ffffff;
+  --mk-aurora-b: #22d3ee;
+  --mk-success: #34d399;
+  --mk-danger: #f87171;
+  --mk-info: #22d3ee;
+  --mk-border: rgba(255, 255, 255, 0.1);
+  --mk-border-strong: rgba(255, 255, 255, 0.16);
+  --mk-ring: #9d86ff;
+  --mk-data-1: #7c5cff;
+  --mk-data-2: #22d3ee;
+  --mk-data-3: #f59e0b;
+  --mk-data-4: #34d399;
+
+  --mk-glass-bg: rgba(21, 26, 33, 0.82);
+  --mk-glass-solid: #171c24;
+  --mk-glass-blur: var(--mk-blur-panel);
+  --mk-nav-glass-bg: rgba(14, 17, 22, 0.78);
+  --mk-nav-solid: #0e1116;
+  --mk-nav-blur: var(--mk-blur-nav);
+  --mk-overlay-bg: rgba(21, 26, 33, 0.88);
+  --mk-overlay-solid: #171c24;
+  --mk-overlay-blur: var(--mk-blur-overlay);
+  --mk-scrim: rgba(0, 0, 0, 0.5);
+  --mk-aurora-opacity: 1;
+  --mk-dotgrid-ink: rgba(255, 255, 255, 0.05);
+  --mk-shadow-e1: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --mk-shadow-e3: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --mk-border-w: 1px;
+  --mk-ring-w: 2px;
+}
+
+/* ---- Signature light ---- */
+[data-theme='light'] {
+  color-scheme: light;
+  --mk-bg-page: #f6f7f9;
+  --mk-bg-raised: #ffffff;
+  --mk-bg-sunken: #eceef2;
+  --mk-canvas-bg: #ffffff;
+  --mk-canvas-ink: #14171c;
+  --mk-text-primary: #171b22; /* 16.11:1 on page */
+  --mk-text-secondary: #3f4854; /* 8.64:1 on page */
+  --mk-text-muted: #565f6c; /* 6.03:1 on page */
+  --mk-accent: #6847f5;
+  --mk-accent-strong: #5936e4; /* white text 6.83:1 */
+  --mk-accent-soft: rgba(104, 71, 245, 0.1);
+  --mk-accent-contrast: #ffffff;
+  --mk-aurora-b: #22d3ee;
+  --mk-success: #047857;
+  --mk-danger: #b91c1c;
+  --mk-info: #0891b2;
+  --mk-border: rgba(23, 27, 34, 0.1);
+  --mk-border-strong: rgba(23, 27, 34, 0.18);
+  --mk-ring: #5936e4;
+  --mk-data-1: #6847f5;
+  --mk-data-2: #0891b2;
+  --mk-data-3: #b45309;
+  --mk-data-4: #047857;
+
+  --mk-glass-bg: rgba(255, 255, 255, 0.8);
+  --mk-glass-solid: #ffffff;
+  --mk-glass-blur: var(--mk-blur-panel);
+  --mk-nav-glass-bg: rgba(246, 247, 249, 0.8);
+  --mk-nav-solid: #f6f7f9;
+  --mk-nav-blur: var(--mk-blur-nav);
+  --mk-overlay-bg: rgba(255, 255, 255, 0.86);
+  --mk-overlay-solid: #ffffff;
+  --mk-overlay-blur: var(--mk-blur-overlay);
+  --mk-scrim: rgba(23, 27, 34, 0.4);
+  --mk-aurora-opacity: 0.55;
+  --mk-dotgrid-ink: rgba(23, 27, 34, 0.07);
+  --mk-shadow-e1: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --mk-shadow-e3: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --mk-border-w: 1px;
+  --mk-ring-w: 2px;
+}
+
+/* ---- High contrast (dark) — no transparency, no gradients, 2px lines ---- */
+[data-theme='hc'] {
+  color-scheme: dark;
+  --mk-bg-page: #000000;
+  --mk-bg-raised: #0a0a0c;
+  --mk-bg-sunken: #000000;
+  --mk-canvas-bg: #ffffff;
+  --mk-canvas-ink: #000000;
+  --mk-text-primary: #ffffff; /* 21:1 */
+  --mk-text-secondary: #e6e6e6; /* 16.83:1 */
+  --mk-text-muted: #bfbfbf; /* 11.42:1 */
+  --mk-accent: #c9b8ff; /* 11.78:1 on black */
+  --mk-accent-strong: #c9b8ff;
+  --mk-accent-soft: #1f1833;
+  --mk-accent-contrast: #000000; /* black on #C9B8FF: 11.78:1 */
+  --mk-aurora-b: #c9b8ff;
+  --mk-success: #7ce7ac;
+  --mk-danger: #ffb4b4;
+  --mk-info: #7fdbff;
+  --mk-border: #9a9a9a; /* 7.46:1 on black */
+  --mk-border-strong: #c0c0c0;
+  --mk-ring: #ffffff;
+  --mk-data-1: #c9b8ff;
+  --mk-data-2: #7fdbff;
+  --mk-data-3: #ffd37f;
+  --mk-data-4: #7ce7ac;
+
+  --mk-glass-bg: #0a0a0c; /* solid — glass disabled */
+  --mk-glass-solid: #0a0a0c;
+  --mk-glass-blur: 0px;
+  --mk-nav-glass-bg: #000000;
+  --mk-nav-solid: #000000;
+  --mk-nav-blur: 0px; /* HC: no glass anywhere, nav included */
+  --mk-overlay-bg: #0a0a0c;
+  --mk-overlay-solid: #0a0a0c;
+  --mk-overlay-blur: 0px;
+  --mk-scrim: #000000;
+  --mk-aurora-opacity: 0; /* aurora off */
+  --mk-dotgrid-ink: rgba(255, 255, 255, 0.16);
+  --mk-shadow-e1: none;
+  --mk-shadow-e3: none;
+  --mk-border-w: 2px;
+  --mk-ring-w: 3px;
+}
+
+/* ---- Reduced transparency: every glass surface swaps to its solid
+       fallback; aurora hidden. Set by the in-app toggle and forced by
+       the high-contrast theme. Must come after the theme blocks. ---- */
+[data-transparency='reduced'] {
+  --mk-glass-bg: var(--mk-glass-solid);
+  --mk-nav-glass-bg: var(--mk-nav-solid);
+  --mk-overlay-bg: var(--mk-overlay-solid);
+  --mk-glass-blur: 0px;
+  --mk-nav-blur: 0px;
+  --mk-overlay-blur: 0px;
+  --mk-aurora-opacity: 0;
+}
+
+/* backdrop-filter unsupported → same solid fallbacks */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root,
+  [data-theme='dark'],
+  [data-theme='light'],
+  [data-theme='hc'] {
+    --mk-glass-bg: var(--mk-glass-solid);
+    --mk-nav-glass-bg: var(--mk-nav-solid);
+    --mk-overlay-bg: var(--mk-overlay-solid);
+  }
+}
+
+/* =====================================================================
+   Tailwind bridge — components keep semantic utility names; the values
+   route through Tier-2 tokens. The stock palette is disabled so raw
+   Tailwind color classes (purple-*, pink-*, slate-*) cannot come back.
+   ===================================================================== */
 @theme {
-  --color-brand-primary: #a855f7;
-  --color-brand-accent: #ec4899;
-  --color-brand-glow: #c084fc;
-  --color-brand-cta: #7e22ce;
-  --color-surface: #f0e6f6;
-  --color-surface-secondary: #f5f0fa;
-  --color-surface-elevated: rgba(255, 255, 255, 0.5);
-  --color-text-primary: #1e1b3a;
-  --color-text-secondary: #5b5278;
-  --color-text-muted: #6a6386;
-  --color-border: rgba(255, 255, 255, 0.35);
-  --color-border-hover: rgba(168, 85, 247, 0.3);
-  --font-display: 'Outfit', sans-serif;
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-brand-primary: var(--mk-accent);
+  --color-brand-accent: var(--mk-accent);
+  --color-brand-glow: var(--mk-accent);
+  --color-brand-cta: var(--mk-accent-strong);
+  --color-accent-contrast: var(--mk-accent-contrast);
+  --color-accent-soft: var(--mk-accent-soft);
+  --color-surface: var(--mk-bg-page);
+  --color-surface-secondary: var(--mk-bg-sunken);
+  --color-surface-elevated: var(--mk-bg-raised);
+  --color-text-primary: var(--mk-text-primary);
+  --color-text-secondary: var(--mk-text-secondary);
+  --color-text-muted: var(--mk-text-muted);
+  --color-border: var(--mk-border);
+  --color-border-strong: var(--mk-border-strong);
+  --color-border-hover: var(--mk-border-strong);
+  --color-success: var(--mk-success);
+  --color-danger: var(--mk-danger);
+  --color-info: var(--mk-info);
+
+  /* Family radius scale: 4 / 8 / 12 / 16 / 24 */
+  --radius-sm: var(--mk-radius-xs);
+  --radius-md: var(--mk-radius-sm);
+  --radius-lg: var(--mk-radius-sm);
+  --radius-xl: var(--mk-radius-md);
+  --radius-2xl: var(--mk-radius-lg);
+  --radius-3xl: var(--mk-radius-xl);
+
+  --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-.dark {
-  --color-brand-primary: #c084fc;
-  --color-brand-accent: #f472b6;
-  --color-brand-glow: #a855f7;
-  --color-brand-cta: #9333ea;
-  --color-surface: #0f0a1a;
-  --color-surface-secondary: #1a1230;
-  --color-surface-elevated: rgba(26, 18, 48, 0.7);
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #a5a0bf;
-  --color-text-muted: #8f89ab;
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(192, 132, 252, 0.3);
-}
-
+/* =====================================================================
+   Base
+   ===================================================================== */
 html {
-  @apply scroll-smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
+  background-color: var(--mk-bg-page);
+  color: var(--mk-text-primary);
   font-family: var(--font-body);
+  min-height: 100vh;
   @apply antialiased;
+}
+
+:focus-visible {
+  outline: var(--mk-ring-w) solid var(--mk-ring);
+  outline-offset: 2px;
+}
+
+/* Reduced motion: OS preference AND the wired in-app setting
+   (data-motion on <html>) both kill every animation/transition. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* =====================================================================
+   Aurora — one static violet→cyan sweep confined behind the header
+   region only, masked to fade before content. Never behind the
+   artboard; never animated; hidden under reduced transparency / HC.
+   ===================================================================== */
+.header-region {
   position: relative;
-  overflow-x: hidden;
 }
 
-body::before {
+.header-region::before {
   content: '';
-  position: fixed;
-  top: -200px;
-  right: -100px;
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(168,85,247,0.12), transparent 70%);
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -200px;
-  left: -100px;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(236,72,153,0.08), transparent 70%);
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-@utility glass {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 1.25rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-}
-
-.dark .glass {
-  background: rgba(26, 18, 48, 0.6);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-@utility card-elevated {
-  background: var(--color-surface-elevated);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--color-border);
-  border-radius: 1.25rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-  transition:
-    box-shadow 0.3s ease,
-    border-color 0.3s ease,
-    transform 0.3s ease;
-}
-
-.card-elevated:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.08);
-  transform: translateY(-2px);
-}
-
-.meme-text {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Impact', 'Arial Black', sans-serif;
-  font-weight: 900;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    0 0 8px rgba(0, 0, 0, 0.8);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 240px;
+  background: linear-gradient(
+    104deg,
+    rgba(124, 92, 255, 0.13) 8%,
+    rgba(124, 92, 255, 0.05) 38%,
+    rgba(34, 211, 238, 0.1) 72%,
+    rgba(34, 211, 238, 0.02) 95%
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%);
+  opacity: var(--mk-aurora-opacity);
   pointer-events: none;
-  z-index: 10;
+  z-index: -1;
 }
 
-.meme-text.top-text {
-  top: 1rem;
+/* =====================================================================
+   Surfaces — glass is a layering signal, not a texture.
+   Legal glass: sticky nav (12px), floating panels over the workspace
+   (16px), modal chrome (20px). Everything else is solid.
+   ===================================================================== */
+@utility glass-nav {
+  background: var(--mk-nav-glass-bg);
+  -webkit-backdrop-filter: blur(var(--mk-nav-blur));
+  backdrop-filter: blur(var(--mk-nav-blur));
 }
 
-.meme-text.bottom-text {
-  bottom: 1rem;
+@utility glass-panel {
+  background: var(--mk-glass-bg);
+  -webkit-backdrop-filter: blur(var(--mk-glass-blur));
+  backdrop-filter: blur(var(--mk-glass-blur));
+  border: var(--mk-border-w) solid var(--mk-border);
+  border-radius: var(--mk-radius-md);
+  box-shadow: var(--mk-shadow-e3);
 }
 
+@utility glass-overlay {
+  background: var(--mk-overlay-bg);
+  -webkit-backdrop-filter: blur(var(--mk-overlay-blur));
+  backdrop-filter: blur(var(--mk-overlay-blur));
+  border: var(--mk-border-w) solid var(--mk-border-strong);
+  border-radius: var(--mk-radius-lg);
+  box-shadow: var(--mk-shadow-e3);
+}
+
+/* Modal scrim — overlay tier (V3_DESIGN_SYSTEM §1.3: modal scrims use
+   --mk-blur-overlay). In HC the scrim token is solid black: no
+   transparency anywhere. */
+.modal-scrim {
+  background: var(--mk-scrim);
+  -webkit-backdrop-filter: blur(var(--mk-overlay-blur));
+  backdrop-filter: blur(var(--mk-overlay-blur));
+}
+
+/* Solid e1 card — dashboard strip, template browser, footer-level UI. */
+@utility card-elevated {
+  background: var(--mk-bg-raised);
+  border: var(--mk-border-w) solid var(--mk-border);
+  border-radius: var(--mk-radius-md);
+  box-shadow: var(--mk-shadow-e1);
+}
+
+/* Canvas well — SOLID sunken surface with the fine studio dot grid.
+   The artboard inside it stays the page's single bright object. */
+.canvas-well {
+  background-color: var(--mk-bg-sunken);
+  background-image: radial-gradient(var(--mk-dotgrid-ink) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: var(--mk-border-w) solid var(--mk-border);
+  border-radius: var(--mk-radius-lg);
+  padding: clamp(12px, 3vw, 32px);
+}
+
+/* ≤430px: the tool tabs act as a bottom dock (bottom-sheet pattern) —
+   the canvas leads, tools stay reachable while panels scroll under. */
+@media (max-width: 430px) {
+  .tool-dock {
+    position: sticky;
+    bottom: 8px;
+    z-index: 30;
+    background: var(--mk-glass-bg);
+    -webkit-backdrop-filter: blur(var(--mk-glass-blur));
+    backdrop-filter: blur(var(--mk-glass-blur));
+    box-shadow: var(--mk-shadow-e3);
+  }
+}
+
+/* =====================================================================
+   Controls
+   ===================================================================== */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -141,57 +387,31 @@ body::after {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.2);
+  background: var(--mk-border-strong);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.35);
+  background: var(--mk-text-muted);
 }
 
 input[type='range'] {
   @apply appearance-none h-2 rounded-full cursor-pointer;
-  background: var(--color-border);
+  background: var(--mk-bg-sunken);
+  border: 1px solid var(--mk-border);
 }
 
 input[type='range']::-webkit-slider-thumb {
   @apply appearance-none w-5 h-5 rounded-full cursor-pointer;
-  background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-accent));
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+  background: var(--mk-accent-strong);
+  border: 2px solid var(--mk-accent-contrast);
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-in-up,
-  .animate-pulse-glow {
-    animation: none;
-  }
+input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: var(--mk-accent-strong);
+  border: 2px solid var(--mk-accent-contrast);
 }
