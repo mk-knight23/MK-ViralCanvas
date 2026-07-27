@@ -4,7 +4,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { buildLayerRenderModel } from '@/renderer/layerRenderModel';
 import type { LayerRenderModel } from '@/renderer/types';
 
-const SELECTION_OUTLINE = '2px dashed rgba(147, 51, 234, 0.9)';
+const SELECTION_OUTLINE = '2px dashed var(--mk-accent)';
 
 interface DragState {
   pointerId: number;
@@ -103,7 +103,7 @@ export function CanvasStage({ stageRef, hideChrome }: CanvasStageProps) {
   return (
     <div
       ref={stageRef}
-      className="relative bg-black rounded-2xl overflow-hidden shadow-2xl mx-auto select-none"
+      className="relative bg-black rounded-sm overflow-hidden shadow-2xl mx-auto select-none"
       style={{
         aspectRatio: `${artboard.width} / ${artboard.height}`,
         width: '100%',

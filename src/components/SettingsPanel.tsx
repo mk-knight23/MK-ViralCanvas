@@ -9,7 +9,7 @@ import {
   Volume2,
   Moon,
   Sun,
-  Monitor,
+  Contrast,
   RotateCcw,
   X,
   Keyboard,
@@ -24,6 +24,33 @@ const formatTime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
+interface ToggleSwitchProps {
+  checked: boolean;
+  onToggle: () => void;
+  ariaLabel?: string;
+}
+
+/** Family switch: accent track when on, accent-contrast knob (HC-safe). */
+function ToggleSwitch({ checked, onToggle, ariaLabel }: ToggleSwitchProps) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`relative w-12 h-6 shrink-0 rounded-full transition-colors cursor-pointer ${
+        checked ? 'bg-brand-cta' : 'bg-surface-secondary border border-border-strong'
+      }`}
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-accent-contrast rounded-full transition-transform ${
+          checked ? 'translate-x-6' : 'translate-x-0'
+        }`}
+      />
+    </button>
+  );
+}
+
 /**
  * Stats display isolated in its own component: it is only mounted while the
  * dialog is open, so the per-second totalTimeSpent tick re-renders nothing
@@ -34,30 +61,20 @@ function StatisticsSection({ playClick }: { playClick: () => void }) {
 
   return (
     <section>
-      <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+      <h3 className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
         <BarChart3 size={14} /> Statistics
       </h3>
       <div className="grid grid-cols-2 gap-3">
         {[
-          {
-            value: stats.totalMemesCreated,
-            label: 'Memes Created',
-            color: 'text-text-primary',
-          },
-          {
-            value: stats.totalDownloads,
-            label: 'Downloads',
-            color: 'text-brand-primary',
-          },
-          { value: stats.totalFavorites, label: 'Favorites', color: 'text-pink-500' },
-          {
-            value: formatTime(stats.totalTimeSpent),
-            label: 'Time Spent',
-            color: 'text-brand-accent',
-          },
+          { value: stats.totalMemesCreated, label: 'Memes Created' },
+          { value: stats.totalDownloads, label: 'Downloads' },
+          { value: stats.totalFavorites, label: 'Favorites' },
+          { value: formatTime(stats.totalTimeSpent), label: 'Time Spent' },
         ].map(stat => (
           <div key={stat.label} className="bg-surface-secondary rounded-xl p-4 text-center">
-            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+            <div className="text-2xl font-mono font-medium tabular-nums text-text-primary">
+              {stat.value}
+            </div>
             <div className="text-[10px] text-text-muted uppercase tracking-wider mt-1 font-semibold">
               {stat.label}
             </div>
@@ -69,7 +86,7 @@ function StatisticsSection({ playClick }: { playClick: () => void }) {
           playClick();
           stats.resetStats();
         }}
-        className="mt-3 w-full flex items-center justify-center gap-2 p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors text-sm font-medium cursor-pointer"
+        className="mt-3 w-full flex items-center justify-center gap-2 p-3 text-danger hover:bg-surface-secondary rounded-xl transition-colors text-sm font-medium cursor-pointer"
       >
         <RotateCcw size={14} /> Reset Statistics
       </button>
@@ -87,7 +104,7 @@ export function SettingsPanel() {
   const themeOptions = [
     { value: 'dark' as const, label: 'Dark', icon: Moon },
     { value: 'light' as const, label: 'Light', icon: Sun },
-    { value: 'system' as const, label: 'System', icon: Monitor },
+    { value: 'hc' as const, label: 'High contrast', icon: Contrast },
   ];
 
   // While the dialog is open: lock background scroll, move focus into the
@@ -151,7 +168,7 @@ export function SettingsPanel() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={close}
           onKeyDown={handleKeyDown}
           role="dialog"
@@ -161,16 +178,19 @@ export function SettingsPanel() {
           <motion.div
             ref={dialogRef}
             tabIndex={-1}
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="card-elevated w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar outline-none"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="glass-overlay w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar outline-none"
             onClick={e => e.stopPropagation()}
           >
-            <header className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-surface-elevated z-10 rounded-t-[1.25rem]">
+            <header
+              className="flex items-center justify-between p-6 border-b border-border sticky top-0 z-10 rounded-t-2xl"
+              style={{ background: 'var(--mk-overlay-solid)' }}
+            >
               <div className="flex items-center gap-3">
-                <div className="bg-brand-primary/10 p-2 rounded-lg">
+                <div className="bg-accent-soft p-2 rounded-lg">
                   <Settings className="text-brand-primary w-5 h-5" />
                 </div>
                 <h2 id="settings-title" className="text-lg font-display font-bold">
@@ -188,36 +208,27 @@ export function SettingsPanel() {
 
             <div className="p-6 space-y-8">
               <section>
-                <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+                <h3 className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
                   <Volume2 size={14} /> Audio
                 </h3>
                 <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-xl">
                   <span className="font-medium text-sm">Sound Effects</span>
-                  <button
-                    onClick={() => {
+                  <ToggleSwitch
+                    checked={settings.soundEnabled}
+                    onToggle={() => {
                       playClick();
                       settings.toggleSound();
                     }}
-                    className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-                      settings.soundEnabled ? 'bg-brand-primary' : 'bg-border'
-                    }`}
-                    role="switch"
-                    aria-checked={settings.soundEnabled}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-                        settings.soundEnabled ? 'translate-x-6' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
+                    ariaLabel="Sound effects"
+                  />
                 </div>
               </section>
 
               <section>
-                <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+                <h3 className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
                   <Sun size={14} /> Theme
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-3" role="group" aria-label="Theme">
                   {themeOptions.map(option => (
                     <button
                       key={option.value}
@@ -225,10 +236,11 @@ export function SettingsPanel() {
                         playClick();
                         settings.setTheme(option.value);
                       }}
-                      className={`flex flex-col items-center p-4 rounded-xl transition-all border-2 cursor-pointer ${
+                      aria-pressed={settings.theme === option.value}
+                      className={`flex flex-col items-center p-4 rounded-xl transition-colors border cursor-pointer ${
                         settings.theme === option.value
-                          ? 'border-brand-primary bg-brand-primary/10'
-                          : 'border-border hover:border-border-hover'
+                          ? 'border-brand-primary bg-accent-soft'
+                          : 'border-border hover:border-border-strong'
                       }`}
                     >
                       <option.icon
@@ -238,7 +250,7 @@ export function SettingsPanel() {
                         }`}
                       />
                       <span
-                        className={`text-sm font-medium ${
+                        className={`text-sm font-medium text-center leading-tight ${
                           settings.theme === option.value ? 'text-text-primary' : 'text-text-muted'
                         }`}
                       >
@@ -250,42 +262,50 @@ export function SettingsPanel() {
               </section>
 
               <section>
-                <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+                <h3 className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
                   <Accessibility size={14} /> Accessibility
                 </h3>
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-xl">
-                  <div>
-                    <span className="font-medium text-sm block">Reduce motion</span>
-                    <span className="text-xs text-text-muted">
-                      Minimizes animations. Your system's reduce-motion preference is always
-                      respected.
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      playClick();
-                      settings.setReducedMotion(!settings.reducedMotion);
-                    }}
-                    className={`relative w-12 h-6 shrink-0 rounded-full transition-colors cursor-pointer ${
-                      settings.reducedMotion ? 'bg-brand-primary' : 'bg-border'
-                    }`}
-                    role="switch"
-                    aria-checked={settings.reducedMotion}
-                    aria-label="Reduce motion"
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-                        settings.reducedMotion ? 'translate-x-6' : 'translate-x-0'
-                      }`}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-xl">
+                    <div>
+                      <span className="font-medium text-sm block">Reduce motion</span>
+                      <span className="text-xs text-text-muted">
+                        Minimizes animations. Your system's reduce-motion preference is always
+                        respected.
+                      </span>
+                    </div>
+                    <ToggleSwitch
+                      checked={settings.reducedMotion}
+                      onToggle={() => {
+                        playClick();
+                        settings.setReducedMotion(!settings.reducedMotion);
+                      }}
+                      ariaLabel="Reduce motion"
                     />
-                  </button>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-xl">
+                    <div>
+                      <span className="font-medium text-sm block">Reduce transparency</span>
+                      <span className="text-xs text-text-muted">
+                        Replaces glass surfaces with solid backgrounds. Always on in High contrast.
+                      </span>
+                    </div>
+                    <ToggleSwitch
+                      checked={settings.reducedTransparency}
+                      onToggle={() => {
+                        playClick();
+                        settings.setReducedTransparency(!settings.reducedTransparency);
+                      }}
+                      ariaLabel="Reduce transparency"
+                    />
+                  </div>
                 </div>
               </section>
 
               <StatisticsSection playClick={playClick} />
 
               <section>
-                <h3 className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+                <h3 className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">
                   <Keyboard size={14} /> Keyboard Shortcuts
                 </h3>
                 <div className="space-y-1.5">

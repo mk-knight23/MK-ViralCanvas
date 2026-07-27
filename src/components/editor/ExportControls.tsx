@@ -38,9 +38,9 @@ export function ExportControls({
             <button
               key={format.value}
               onClick={() => onOptionsChange({ ...options, format: format.value })}
-              className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-mono font-medium transition-colors cursor-pointer ${
                 options.format === format.value
-                  ? 'bg-surface-elevated text-brand-primary shadow-sm'
+                  ? 'bg-accent-soft text-text-primary shadow-[inset_0_-2px_0_var(--mk-accent)]'
                   : 'text-text-muted hover:text-text-secondary'
               }`}
               aria-pressed={options.format === format.value}
@@ -54,9 +54,9 @@ export function ExportControls({
             <button
               key={multiplier}
               onClick={() => onOptionsChange({ ...options, multiplier })}
-              className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-mono font-medium transition-colors cursor-pointer ${
                 options.multiplier === multiplier
-                  ? 'bg-surface-elevated text-brand-primary shadow-sm'
+                  ? 'bg-accent-soft text-text-primary shadow-[inset_0_-2px_0_var(--mk-accent)]'
                   : 'text-text-muted hover:text-text-secondary'
               }`}
               aria-pressed={options.multiplier === multiplier}
@@ -89,14 +89,14 @@ export function ExportControls({
         <button
           onClick={onDownload}
           disabled={isExporting}
-          className="bg-brand-cta hover:brightness-90 text-white font-bold p-3 rounded-xl shadow-lg shadow-brand-primary/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-brand-cta text-accent-contrast font-semibold p-3 rounded-xl border border-transparent hover:border-ring flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" /> {isExporting ? 'Exporting…' : 'Download'}
         </button>
         <button
           onClick={onCopy}
           disabled={isExporting}
-          className="bg-surface-secondary border border-border hover:border-brand-primary/30 text-text-secondary p-3 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-surface-elevated border border-border hover:border-border-strong text-text-primary p-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Copy className="w-4 h-4" /> Copy
         </button>

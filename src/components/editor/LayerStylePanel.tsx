@@ -121,10 +121,10 @@ export function LayerStylePanel({ layer, onUpdate }: LayerStylePanelProps) {
               key={c}
               disabled={disabled}
               onClick={() => update({ color: c })}
-              className={`w-6 h-6 rounded-full border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
+              className={`w-6 h-6 rounded-full border-2 transition-[border-color,transform] cursor-pointer disabled:cursor-not-allowed ${
                 layer?.color === c
                   ? 'border-brand-primary scale-110'
-                  : 'border-border hover:scale-105'
+                  : 'border-border-strong hover:scale-105'
               }`}
               style={{ backgroundColor: c }}
               aria-label={`Color ${c}`}
@@ -194,14 +194,16 @@ export function LayerStylePanel({ layer, onUpdate }: LayerStylePanelProps) {
             onClick={() => update({ shadowEnabled: !layer?.shadowEnabled })}
             disabled={disabled}
             className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed ${
-              layer?.shadowEnabled ? 'bg-brand-primary' : 'bg-border'
+              layer?.shadowEnabled
+                ? 'bg-brand-cta'
+                : 'bg-surface-secondary border border-border-strong'
             }`}
             role="switch"
             aria-checked={layer?.shadowEnabled ?? false}
             aria-label="Toggle text shadow"
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
+              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-accent-contrast rounded-full transition-transform ${
                 layer?.shadowEnabled ? 'translate-x-5' : 'translate-x-0'
               }`}
             />

@@ -20,7 +20,7 @@ function layerPlaceholder(index: number, total: number): string {
 }
 
 const ICON_BUTTON_CLASS =
-  'p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed';
+  'p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed';
 
 export function LayersPanel() {
   const layers = useProjectStore(s => s.project.layers);
@@ -41,7 +41,7 @@ export function LayersPanel() {
         <button
           onClick={() => addLayer()}
           disabled={layers.length >= MAX_LAYERS}
-          className="flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-accent transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-text-primary transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label="Add text layer"
         >
           <Plus className="w-3.5 h-3.5" /> Add layer
@@ -55,10 +55,10 @@ export function LayersPanel() {
             <div
               key={layer.id}
               onClick={() => selectLayer(layer.id)}
-              className={`rounded-xl border p-2 space-y-1.5 transition-all cursor-pointer ${
+              className={`rounded-xl border p-2 space-y-1.5 transition-colors cursor-pointer ${
                 isSelected
-                  ? 'border-brand-primary/60 bg-brand-primary/5'
-                  : 'border-border bg-surface-secondary hover:border-border-hover'
+                  ? 'border-brand-primary bg-accent-soft'
+                  : 'border-border bg-surface-secondary hover:border-border-strong'
               }`}
             >
               {isTextLayer(layer) ? (
@@ -69,7 +69,7 @@ export function LayersPanel() {
                   placeholder={layerPlaceholder(index, layers.length)}
                   onFocus={() => selectLayer(layer.id)}
                   onChange={e => updateLayer(layer.id, { text: e.target.value })}
-                  className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none transition-all disabled:opacity-50"
+                  className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none transition-colors disabled:opacity-50"
                   aria-label={`Layer ${index + 1} text`}
                 />
               ) : (
@@ -127,7 +127,7 @@ export function LayersPanel() {
                 <button
                   onClick={() => removeLayer(layer.id)}
                   disabled={layers.length <= 1}
-                  className={`${ICON_BUTTON_CLASS} hover:text-red-500 ml-auto`}
+                  className={`${ICON_BUTTON_CLASS} hover:text-danger ml-auto`}
                   aria-label="Delete layer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

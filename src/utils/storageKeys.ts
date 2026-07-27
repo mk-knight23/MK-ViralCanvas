@@ -16,6 +16,9 @@ export const MEMES_STORE_KEY = `${STORAGE_NAMESPACE}memes${VERSION_SUFFIX}`;
 export const SETTINGS_STORE_KEY = `${STORAGE_NAMESPACE}settings${VERSION_SUFFIX}`;
 export const STATS_STORE_KEY = `${STORAGE_NAMESPACE}stats${VERSION_SUFFIX}`;
 
+/** Active theme name ('dark' | 'light' | 'hc') — single source of truth. */
+export const THEME_KEY = `${STORAGE_NAMESPACE}theme${VERSION_SUFFIX}`;
+
 // Project persistence (utils/projectStorage.ts).
 export const PROJECT_KEY_PREFIX = `${STORAGE_NAMESPACE}project.`;
 export const LAST_PROJECT_KEY = `${STORAGE_NAMESPACE}last-project-id${VERSION_SUFFIX}`;

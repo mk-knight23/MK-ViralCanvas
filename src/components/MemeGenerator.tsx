@@ -201,17 +201,22 @@ export function MemeGenerator() {
       <DashboardStrip refreshKey={dashboardKey} onOpenProject={openProject} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Panel */}
-        <div className="lg:col-span-4 space-y-4">
+        {/* Left Panel — tools. On phones the canvas leads (order-2) and the
+            tab strip becomes a sticky bottom dock (.tool-dock, ≤430px). */}
+        <div className="lg:col-span-4 min-[1440px]:col-span-3 flex flex-col gap-4 order-2 lg:order-1">
           {/* Tabs */}
-          <div className="flex bg-surface-secondary rounded-xl p-1 border border-border">
+          <div
+            className="tool-dock max-[430px]:order-last flex bg-surface-secondary rounded-xl p-1 border border-border"
+            role="group"
+            aria-label="Editor tools"
+          >
             {(['customize', 'browse'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
                   activeTab === tab
-                    ? 'bg-surface-elevated text-brand-primary shadow-sm border border-border'
+                    ? 'bg-accent-soft text-text-primary shadow-[inset_0_-2px_0_var(--mk-accent)]'
                     : 'text-text-muted hover:text-text-secondary'
                 }`}
               >
@@ -233,17 +238,17 @@ export function MemeGenerator() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="card-elevated p-5 space-y-5"
+              className="glass-panel p-5 space-y-5"
             >
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                <h3 className="font-display font-semibold text-lg flex items-center gap-2">
                   <Type className="w-5 h-5 text-brand-primary" /> Text
                 </h3>
                 <div className="flex gap-1">
                   <button
                     onClick={undo}
                     disabled={!canUndo}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                     aria-label="Undo"
                   >
                     <Undo2 className="w-4 h-4" />
@@ -251,7 +256,7 @@ export function MemeGenerator() {
                   <button
                     onClick={redo}
                     disabled={!canRedo}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                     aria-label="Redo"
                   >
                     <Redo2 className="w-4 h-4" />
@@ -268,15 +273,15 @@ export function MemeGenerator() {
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
                   onClick={handleRandom}
-                  className="bg-surface-secondary hover:bg-border text-text-secondary p-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer active:scale-95"
+                  className="bg-surface-secondary border border-border hover:border-border-strong text-text-secondary p-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4" /> Random
                 </button>
                 <button
                   onClick={handleFavorite}
-                  className="bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-950/50 p-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer active:scale-95"
+                  className="bg-accent-soft text-text-primary border border-transparent hover:border-brand-primary p-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer"
                 >
-                  <Heart className="w-4 h-4" /> Save
+                  <Heart className="w-4 h-4 text-brand-primary" /> Save
                 </button>
               </div>
 
@@ -292,7 +297,7 @@ export function MemeGenerator() {
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-border hover:border-brand-primary/40 p-3.5 rounded-xl text-text-muted hover:text-brand-primary transition-all flex items-center justify-center gap-2 text-sm font-medium cursor-pointer"
+                className="w-full border-2 border-dashed border-border hover:border-border-strong p-3.5 rounded-xl text-text-muted hover:text-text-secondary transition-colors flex items-center justify-center gap-2 text-sm font-medium cursor-pointer"
               >
                 <Upload className="w-4 h-4" /> Upload Your Own Image
               </button>
@@ -316,24 +321,25 @@ export function MemeGenerator() {
           )}
         </div>
 
-        {/* Right Panel - Preview */}
-        <div className="lg:col-span-8 flex flex-col items-center gap-6">
+        {/* Right Panel — canvas well: solid sunken surface + studio dot
+            grid; the artboard is the page's single bright object. */}
+        <div className="lg:col-span-8 min-[1440px]:col-span-9 flex flex-col items-center gap-6 order-1 lg:order-2">
           <div className="w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-text-secondary">Preview</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-text-muted bg-surface-secondary px-3 py-1.5 rounded-lg">
-                  {project.artboard.width}×{project.artboard.height}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h3 className="font-display font-semibold text-lg text-text-secondary">Preview</h3>
+              <div className="flex items-center gap-3 font-mono text-xs text-text-muted tabular-nums min-w-0">
+                <span>
+                  {project.artboard.width} × {project.artboard.height} px
                 </span>
                 {project.template && (
-                  <span className="text-xs text-text-muted bg-surface-secondary px-3 py-1.5 rounded-lg truncate max-w-[200px]">
-                    {project.template.name}
-                  </span>
+                  <span className="truncate max-w-[200px]">{project.template.name}</span>
                 )}
               </div>
             </div>
 
-            <CanvasStage stageRef={stageRef} hideChrome={isExporting} />
+            <div className="canvas-well">
+              <CanvasStage stageRef={stageRef} hideChrome={isExporting} />
+            </div>
           </div>
 
           <FavoritesGallery
