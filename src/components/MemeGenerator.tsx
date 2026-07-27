@@ -1,27 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Cat,
   ChevronDown,
-  Clapperboard,
-  Film,
-  Flame,
-  Gamepad2,
   Globe,
   Heart,
   ImageIcon,
-  Laugh,
   Palette,
   RefreshCw,
   Redo2,
-  Search,
   Share2,
-  Skull,
-  Sparkles,
   Trash2,
-  TrendingUp,
-  Trophy,
-  Tv,
   Type,
   Undo2,
   Upload,
@@ -30,13 +18,7 @@ import { useMemeStore } from '@/stores/memeStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useStatsStore } from '@/stores/stats';
 import { useToastStore } from '@/stores/toastStore';
-import {
-  getActiveSources,
-  getCategoryMemes,
-  getTemplates,
-  getTrendingMemes,
-  searchMemes,
-} from '@/utils/api';
+import { getTemplates } from '@/utils/api';
 import { findLayer } from '@/utils/layers';
 import { isTextLayer } from '@/types/project';
 import { useAutosave } from '@/hooks/useAutosave';
@@ -46,6 +28,7 @@ import { getLastProjectId, loadProject, setLastProjectId } from '@/utils/project
 import type { MemeTemplate } from '@/types/meme';
 import type { ExportOptions } from '@/types/project';
 import type { SearchMeme } from '@/utils/api';
+import { TemplateBrowser } from './browse/TemplateBrowser';
 import { ArtboardPicker } from './editor/ArtboardPicker';
 import { CanvasStage } from './editor/CanvasStage';
 import { DashboardStrip } from './editor/DashboardStrip';
@@ -69,36 +52,6 @@ const WEIGHT_OPTIONS = [
   { value: 900, label: 'Black' },
 ];
 
-const SOURCE_COLORS: Record<string, string> = {
-  serper: '#2563eb',
-  tavily: '#9333ea',
-  brave: '#f97316',
-  serpapi: '#16a34a',
-  searchapi: '#0891b2',
-  exa: '#6366f1',
-  scrapingdog: '#ca8a04',
-  apify: '#e11d48',
-  imgflip: '#4b5563',
-};
-
-const CATEGORIES = [
-  { id: 'templates', name: 'Templates', icon: ImageIcon },
-  { id: 'trending', name: 'Trending', icon: TrendingUp },
-  { id: 'funny', name: 'Funny', icon: Laugh },
-  { id: 'indian', name: 'Indian', icon: Globe },
-  { id: 'american', name: 'American', icon: Globe },
-  { id: 'movies', name: 'Movies', icon: Film },
-  { id: 'series', name: 'Series', icon: Tv },
-  { id: 'politics', name: 'Politics', icon: Clapperboard },
-  { id: 'dark-humor', name: 'Dark Humor', icon: Skull },
-  { id: 'animals', name: 'Animals', icon: Cat },
-  { id: 'sports', name: 'Sports', icon: Trophy },
-  { id: 'gaming', name: 'Gaming', icon: Gamepad2 },
-  { id: 'ai', name: 'AI Memes', icon: Sparkles },
-  { id: 'classic', name: 'Classic', icon: Flame },
-  { id: 'reaction', name: 'Reaction', icon: Laugh },
-];
-
 const QUICK_COLORS = [
   '#ffffff',
   '#000000',
@@ -109,8 +62,6 @@ const QUICK_COLORS = [
   '#ff6b00',
   '#ff00ff',
 ];
-
-const SEARCH_ERROR_MESSAGE = 'Search unavailable — try again';
 
 export function MemeGenerator() {
   const { templates, setTemplates, addFavorite, favorites, removeFavorite } = useMemeStore();
@@ -134,16 +85,10 @@ export function MemeGenerator() {
   // The style panel edits text properties, so it only operates on text layers.
   const selectedLayer = foundLayer && isTextLayer(foundLayer) ? foundLayer : undefined;
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState('templates');
-  const [categoryMemes, setCategoryMemes] = useState<SearchMeme[]>([]);
   const [showFavorites, setShowFavorites] = useState(true);
   const [activeTab, setActiveTab] = useState<'customize' | 'browse'>('customize');
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [activeSources, setActiveSources] = useState<string[]>([]);
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'png',
     quality: 0.92,
@@ -153,7 +98,6 @@ export function MemeGenerator() {
 
   const stageRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bumpDashboard = useCallback(() => setDashboardKey(key => key + 1), []);
 
@@ -196,70 +140,8 @@ export function MemeGenerator() {
       }
     };
     load();
-    getActiveSources()
-      .then(setActiveSources)
-      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setTemplates, setProject]);
-
-  const handleCategoryChange = async (catId: string) => {
-    setActiveCategory(catId);
-    setSearchError(null);
-    if (catId === 'templates') {
-      setCategoryMemes([]);
-      return;
-    }
-    setSearchLoading(true);
-    try {
-      const results =
-        catId === 'trending' ? await getTrendingMemes() : await getCategoryMemes(catId);
-      setCategoryMemes(results);
-      if (results.length === 0) {
-        addToast(`No memes found for ${catId}`, 'info');
-      }
-    } catch {
-      setCategoryMemes([]);
-      setSearchError(SEARCH_ERROR_MESSAGE);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (!term.trim()) {
-      setSearchError(null);
-      if (activeCategory !== 'templates') {
-        handleCategoryChange(activeCategory);
-      }
-      return;
-    }
-    searchTimerRef.current = setTimeout(async () => {
-      setSearchLoading(true);
-      setSearchError(null);
-      try {
-        const results = await searchMemes(term);
-        setCategoryMemes(results);
-        if (results.length === 0) {
-          addToast('No memes found. Try different keywords!', 'info');
-        }
-      } catch {
-        setCategoryMemes([]);
-        setSearchError(SEARCH_ERROR_MESSAGE);
-      } finally {
-        setSearchLoading(false);
-      }
-    }, 500);
-  };
-
-  const retryBrowse = () => {
-    if (searchTerm.trim()) {
-      handleSearch(searchTerm);
-    } else {
-      handleCategoryChange(activeCategory);
-    }
-  };
 
   const handleRandom = () => {
     if (templates.length === 0) return;
@@ -334,16 +216,6 @@ export function MemeGenerator() {
     setProject(loaded);
     setLastProjectId(loaded.id);
     addToast(`Opened "${loaded.name}"`, 'success');
-  };
-
-  const getDisplayMemes = (): (MemeTemplate | SearchMeme)[] => {
-    if (activeCategory === 'templates') {
-      if (searchTerm) {
-        return templates.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
-      }
-      return templates.slice(0, 50);
-    }
-    return categoryMemes;
   };
 
   const updateSelected = (updates: Parameters<typeof updateLayer>[1]) => {
@@ -735,121 +607,11 @@ export function MemeGenerator() {
 
           {/* Browse Tab */}
           {activeTab === 'browse' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="card-elevated p-5 space-y-4"
-            >
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={e => handleSearch(e.target.value)}
-                  placeholder="Search memes across the web..."
-                  className="w-full bg-surface-secondary border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary outline-none"
-                />
-              </div>
-
-              {activeSources.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] text-text-muted font-medium uppercase tracking-wide">
-                    Powered by {activeSources.length} sources:
-                  </span>
-                  {activeSources.map(src => (
-                    <span
-                      key={src}
-                      className="text-white text-[9px] font-bold px-1.5 py-0.5 rounded"
-                      style={{ backgroundColor: SOURCE_COLORS[src] || '#7c3aed' }}
-                    >
-                      {src}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-                {CATEGORIES.map(cat => {
-                  const Icon = cat.icon;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setSearchTerm('');
-                        handleCategoryChange(cat.id);
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                        activeCategory === cat.id
-                          ? 'bg-brand-cta text-white'
-                          : 'bg-surface-secondary text-text-muted hover:text-text-secondary hover:bg-border'
-                      }`}
-                    >
-                      <Icon className="w-3 h-3" /> {cat.name}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {searchLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-6 h-6 animate-spin text-brand-primary" />
-                </div>
-              ) : searchError ? (
-                <div role="alert" className="text-center py-12 space-y-3">
-                  <p className="text-sm font-medium text-red-500">{searchError}</p>
-                  <button
-                    onClick={retryBrowse}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-cta text-white text-sm font-semibold hover:brightness-90 transition-all cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4" /> Retry
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-2 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar">
-                  {getDisplayMemes().map(m => (
-                    <button
-                      key={m.id}
-                      onClick={() => selectMeme(m)}
-                      className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer group ${
-                        project.template?.id === m.id
-                          ? 'border-brand-primary ring-2 ring-brand-primary/20'
-                          : 'border-transparent hover:border-border-hover'
-                      }`}
-                    >
-                      <img
-                        src={m.url}
-                        alt={m.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        onError={e => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-1.5">
-                        <span className="text-white text-[10px] font-semibold leading-tight line-clamp-2">
-                          {m.name}
-                        </span>
-                      </div>
-                      {'source' in m && (
-                        <span
-                          className="absolute top-1 right-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase"
-                          style={{
-                            backgroundColor: SOURCE_COLORS[m.source as string] || '#7c3aed',
-                          }}
-                        >
-                          {m.source as string}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                  {getDisplayMemes().length === 0 && !searchLoading && (
-                    <div className="col-span-3 text-center py-12 text-text-muted text-sm">
-                      No memes found. Try a different search or category!
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
+            <TemplateBrowser
+              templates={templates}
+              selectedTemplateId={project.template?.id}
+              onSelect={selectMeme}
+            />
           )}
         </div>
 
