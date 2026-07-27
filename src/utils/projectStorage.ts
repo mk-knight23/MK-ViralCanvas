@@ -21,11 +21,17 @@ import {
   getArtboardPreset,
 } from '@/types/project';
 import type { MemeTemplate } from '@/types/meme';
+import {
+  EXPORT_COUNT_KEY,
+  LAST_PROJECT_KEY,
+  LEGACY_MEMELAB_PREFIX,
+  LEGACY_VIRALCANVAS_PREFIX,
+  PROJECT_KEY_PREFIX,
+  STORAGE_NAMESPACE,
+  projectStorageKey,
+} from './storageKeys';
 
-export const STORAGE_PREFIX = 'viralcanvas:v1:';
-const PROJECT_KEY_PREFIX = `${STORAGE_PREFIX}project:`;
-const LAST_PROJECT_KEY = `${STORAGE_PREFIX}last-project-id`;
-const EXPORT_COUNT_KEY = `${STORAGE_PREFIX}export-count`;
+export { projectStorageKey };
 
 const EXPORT_FILE_KIND = 'viralcanvas-project';
 const MAX_TEXT_LENGTH = 500;
@@ -279,10 +285,6 @@ function safeSetItem(key: string, value: string): boolean {
   }
 }
 
-export function projectStorageKey(id: string): string {
-  return `${PROJECT_KEY_PREFIX}${id}`;
-}
-
 /** Saves the project. Returns false when storage is unavailable or full. */
 export function saveProject(project: Project): boolean {
   const stamped: Project = { ...project, updatedAt: new Date().toISOString() };
@@ -361,7 +363,14 @@ export function estimateStorageBytes(): number {
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = localStorage.key(i);
       if (!key) continue;
-      if (!key.startsWith(STORAGE_PREFIX) && !key.startsWith('memelab-')) continue;
+      // Legacy namespaces still occupy quota until their one-release
+      // grace period ends, so they count toward the estimate too.
+      if (
+        !key.startsWith(STORAGE_NAMESPACE) &&
+        !key.startsWith(LEGACY_VIRALCANVAS_PREFIX) &&
+        !key.startsWith(LEGACY_MEMELAB_PREFIX)
+      )
+        continue;
       const value = safeGetItem(key) ?? '';
       chars += key.length + value.length;
     }
